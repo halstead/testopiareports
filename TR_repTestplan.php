@@ -142,7 +142,7 @@ class TR_repTestplan extends TR_Template{
 		$sql->addField("test_cases", "summary", "Test Case Summary");
 		$sql->addField("test_case_categories", "name", "Category");
 		$sql->addField("priority", "value", "Priority");
-		$sql->addField("profiles", "realname", "Tester");
+#		$sql->addField("profiles", "realname", "Tester");
 		$sql->addField("test_case_status", "name", "Status");
 		$sql->addField("test_cases", "creation_date", "Creation Date", "LEFT($1,10)");
 $sql->addField("test_case_activity", "changed", "Last_Changed"); #EDITED: added a Last Changed field to the table
@@ -153,12 +153,13 @@ $sql->addField("test_case_activity", "changed", "Last_Changed"); #EDITED: added 
 $sql->addJoin("Left", "=", "test_case_activity", "case_id", "test_cases", "case_id"); #EDITED: added a JOIN to get the Last Changed field in the table
 		$sql->addJoin("Left", "=", "test_case_categories", "category_id", "test_cases", "category_id");
 		$sql->addJoin("Inner", "=", "priority", "id", "test_cases", "priority_id"); 
-		$sql->addJoin("Left", "=", "profiles", "userid", "test_cases", "default_tester_id");
+#		$sql->addJoin("Left", "=", "profiles", "userid", "test_cases", "default_tester_id");
 		$sql->addJoin("Inner", "=", "test_case_status", "case_status_id", "test_cases", "case_status_id");
 		
 #		$sql->addGroupSort("Order", "test_cases", "case_id"); EDITED: This line is no longer needed as the ordering is done later
 		
 		$sql->addWhere("test_plans", "plan_id", "=", $this->getPlanID());
+		$sql->addWhere("test_cases", "case_status_id", "<>", "3", "AND");
 #		return $sql->toSQL(); #EDITED: removed this line and added the below 2 lines to sort descendant by Last_Changed and group by Test_Case => A working Last_Changed field for the report!
 $result=$sql->toSQL();
 return "select * from (select * from (select * from ($result) as test order by Last_Changed DESC) as test2 group by Test_Case) as test3 order by Category DESC, Test_Case";

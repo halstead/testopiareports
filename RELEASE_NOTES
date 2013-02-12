@@ -1,0 +1,84 @@
+Release notes for Testopia Reports
+
+Version 0.4 - 14.06.2009
+========================
+- bug fixes
+	- fixed percentage calculation in report completion
+	- cases not showing up in report "Test Plan" if there is no tester attached
+
+- enhancements
+	- added more elements to the CSS file for customizing the appearance
+	- added titles to the charts
+	- added tooltips to the charts
+	- added alternative texts to the charts (will be displayed if the grahic for the chart could not be displayed)
+	- new parameter: title - (true, false); hides or shows the title of charts; default: true
+	- new parameter: reportoptions (list of additional pairs of parameters (param=value) for reports separated by comma
+	- new parameter: roundperc; number of decimals for percentage rounding (e.g. roundperc=2); default: 0
+	- new parameter for Localsettings.php: graphviz - for specifying the location of the program "dot" for generating dependency graphs
+	- changed all reports to use TR_SQL
+	- enhacements in class TR_SQL (functions: addField, addWhere, addJoin)
+	- enhacements for report framework 
+		- new custom function for data new line (for injecting extra lines)
+		- new custom function for beginning a new line (for modifying the complete style of one line)
+		- new custom function for init (for initialising the report)
+		- new custom function for column formatting (getColumnFormats) only if the cell is not rendered by the custom render function
+		- new custom function "injectBody" for injecting the body of a report while using renderPlainHTML
+	- new report "agenda": automatically creating the agenda for a test run using the test case dependencies. If graphviz is installed a dependency graph
+		will be created. (example on the MediaWiki page: http://www.mediawiki.org/wiki/Extension:Testopia_Reports)
+		This report is supporting the following reportoptions:
+			- starthour (default: 8) The start hour for one test day. Test cases will be scheduled using this start time
+			- startminute (default: 0) See starthour
+			- endhour (default: 18) The end hour for one test day. 
+			- endminute (default: 0) See endhour
+			- startdate (default: current system date) Agenda will start on this day.
+			- ignoreweekends (default: false) If false, test case won't be scheduled on week ends
+			- withdependency (default: true) If true only cases with dependencies will be included in the agenda
+			- highlightresconfl (default: true) If a resource conflict is detected (same tester) the corresponding rows will be highlighted
+			- dependencygraphonly (default: false) Shows only the dependency graph
+	- improvements for report "Test Plan"
+		- highlighting durations with 00:00:00 
+		- highlighting cases without tester
+		- highlighting cases that are proposed
+		- marking disabled test cases (whole line will be dimmed)
+		
+- others
+	- removed support for ploticus; maybe I will pick up it later but for the moment it is too complex to include
+	
+Version 0.3 - 23.05.2009
+========================
+- bug fixes
+	- fixed typo in a report name; now it is completion
+	- fixed wrong counter in charts for Priority Breakdown Report
+	- fixed the last (total) line in each table if the table is sortable
+	
+- enhancements
+	- added possibility to set the message (per report) that is being displayed when no results were found by the query (function setMsgNoResultsFound)
+	- parameter "sortable" is now per default set to false
+	- clean up of routine renderPlainHTML
+	- new parameter: chartpos - position relative to the data table (left, top, right, bottom); default: right
+	- new parameter: chartlayout - alignment of charts (vertical, horizontal); default: vertical
+	- new parameter: nudechart - (true, false); if true the chart will be shown without any table surrounding it; default: false
+	- new parameter: showhide - (true, false); if true buttons will be displayed to hide and show the table and chart; needs java script to be enabled
+	- new parameter: hidden - (true, false); if using parameter "showhide", "hidden" will control the initial status. If true the table and chart will initial be hidden
+	- if a report could render more than one chart at a time, now the chart type (bar, pie, ...) could be specified per chart (simply add more types and delimit them with ",") 
+	- renamed "charts" to "chart" and "chart" to "charttype" for more clarity
+	- added new value(s) to parameter "chartlayout": instead of giving "horizontal" or "vertical" a number could be given. This number will be the number of columns. 
+	  E.g., 2 = two colums. If three or more charts they will be displayed in more than on row. Each row having two charts.
+	- new report "testplan" with details about the test cases for a testplan. Supported charts: tstatus (test case status), testers (assignments to tester), prio 
+	 (priority of test cases), category (assignments to category)
+
+Version 0.2 - 07.05.2009
+========================
+- bug fixes: 
+	- extension is now behaving correctly if no results are found and is no longer messing up the complete screen
+	- debug flag is now working even if the result set is not empty
+- enhancements:
+	- added new report "completion" which is basically the report included in Testopia
+	- introduced report footer for adding additional information at the end of the report
+	- added some more strings to the localisation file
+	- added some more inline documentation
+	- changed routine for adding debug information
+	
+Version 0.1 - 29.04.2009
+========================
+- initial experimental release with three reports and Ploticus and Google Charts support

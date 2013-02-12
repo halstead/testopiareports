@@ -26,10 +26,15 @@ class GoogleChart {
 	private $autodim="auto";
 	
 	# coeficient for determining the chart size
-	private $coef  =3.1;
-	private $coefp3=3.6;
+	private $coef           = 3.1;
+	private $coefp3         = 3.6;
+	private $coefmeter      = 2.5;
 	private $default_height = 100;
-	private $default_width  = 200;
+	private $default_width  = "auto";
+	
+	private $interval    = "auto";
+	private $pxPerNumber = 20;
+	private $pxPerLabel = 25;
 	
 	private $height;
 	private $width;
@@ -38,9 +43,12 @@ class GoogleChart {
 	private $labels = array();
 	private $labelsHide = false;
 	private $legend = array();
+	private $legendPos = "";
 	private $legendHide = false;
 	private $colors = array();
 	private $type;
+	private $tooltip;
+	private $altText;
 	
 	private $dataMin;
 	private $dataMax;
@@ -49,8 +57,19 @@ class GoogleChart {
 	private $dataMinRange;
 	private $dataMaxRange;
 	
+	public function setTitle( $title ) {
+		$this->title = $title;
+		$this->title = str_replace(" ", "+", $this->title);
+		$this->title = str_replace("\n", "|", $this->title);
+		$this->title = htmlentities($this->title);
+	}
+	
 	public function setType( $type ) {
 		$this->type = $type;
+	}
+
+	public function getType() {
+		return $this->type;
 	}
 	
 	public function setDefaultHeight( $default ) {
@@ -69,18 +88,49 @@ class GoogleChart {
 		$this->width = $height;
 	}
 	
+	public function setDimCoef( $coef ) {
+		$this->coef = $coef;
+	}
+	
+	public function setDimCoef3D( $coef ) {
+		$this->coefp3 = $coef;
+	}
+
+	public function setDimCoefMeter( $coef ) {
+		$this->coefmeter = $coef;
+	}
+	
+	public function setInterval($axis, $interval) {
+		#axis: 0 = y-left, x = 1, y-right
+		$this->interval=$interval;
+	}
+	
 	private function calcChartDimension() {
 		$coef=$this->coef;
 		if ( $this->type == "p3" ) {
 			$coef=$this->coefp3;
 		}
+		if ( $this->type == "gom" ) {
+			$coef=$this->coefmeter; 
+		}
 			
+		if ($this->width == "") {
+			$this->width=$this->default_width;
+		}
+		if ($this->height == "") {
+			$this->height=$this->default_height;
+		}
+		
 		if ($this->width==$this->autodim and $this->height!=$this->autodim) {
 			$this->width=abs($coef * $this->height);
 		} elseif ($this->width!=$this->autodim and $this->height==$this->autodim) {
-			$this->height=abs($width / $coef);
+			if ($this->type == "bvg" and $this->labelsHide == true) {
+				$this->height=$this->pxPerLabel * count($this->labels);
+			} else {
+				$this->height=abs($width / $coef);
+			}
 		} elseif ($this->width==$this->autodim and $this->height==$this->autodim) {
-			$this->width=$this->getArgs()->default_width;				
+			$this->width=$this->default_width;				
 			$this->height=$this->default_height;				
 		}
 	}
@@ -90,20 +140,53 @@ class GoogleChart {
 		return "&chs=".$this->width."x".$this->height;
 	}
 	
+	public function setAltText( $text ) {
+		$this->altText = $text;
+	}
+	
+	public function getAltText() {
+		return htmlentities($this->altText);
+	}
+	
+	public function setTooltip( $tip ) {
+		$this->tooltip = $tip;
+	}
+	
+	public function getTooltip() {
+		return htmlentities($this->tooltip);	
+	}
+	
 	public function setChartType( $type ) {
 		$this->type = $type;
 	}
 	
-	public function setTitle( $title ) {
-		$this->title = $title;
-	}
-	
 	public function addLabel( $label ) {
-		$this->labels[] = $label;
+		$this->labels[] = htmlentities($label);
 	}
 
 	public function addLegend( $legend ) {
-		$this->legend[] = $legend;
+		$this->legend[] = htmlentities($legend);
+	}
+	
+	public function setLegendPos($pos, $orientation) {
+		switch (strtolower($pos)) {
+			case "top": 
+				$this->legendPos="t";
+				if (strtolower($orientation) == "vertical") {
+					$this->legendPos.="v"; 
+				}
+				break;
+			case "bottom":
+				$this->legendPos="b";
+				if (strtolower($orientation) == "vertical") {
+					$this->legendPos.="v"; 
+				}
+				break;				
+			case "left":
+				$this->legendPos="l";
+			case "right":
+				$this->legendPos="r";
+		}
 	}
 	
 	public function addColor( $color ) {
@@ -207,8 +290,14 @@ class GoogleChart {
 			$output=$this->add2str($output,"|",$legend);
 		}
 		
-		if ($this->legend) {
+		#add the legend
+		if ($output != "") {
 			$output="&chdl=".$output;
+		}
+		
+		#add the position
+		if ($this->legendPos != "") {
+			$output="&chdlp=".$this->legendPos;
 		}
 		
 		return $output;	
@@ -222,11 +311,24 @@ class GoogleChart {
 		$url=$this->baselink;
 		$url.="cht=".$this->type;
 		
+		#get the size
+		$url.=$this->getChartSize();
+		
+		#get the interval
+		if ($this->interval == "auto") {
+			#y-axis left
+			$count = $this->dataMax - $this->dataMin;
+			$interval = round($count / round($this->height / $this->pxPerNumber));
+		} else {
+			$interval = $this->interval;
+		}
+		
+		#do something for the bar chart
 		if ($this->type == "bvg") {
 			$url.="&chbh=a";
 			$url.="&chds=".$this->dataMin.",".$this->dataMax; #data scale for bar chart
 			$url.="&chxt=y"; #axis type -> here only y will be rendered
-			$url.="&chxr=0,".$this->dataMin.",".$this->dataMax.",1"; #axis range for bar chart <axis index>, <range start>, <range end>, <interval>
+			$url.="&chxr=0,".$this->dataMin.",".$this->dataMax.",".$interval; #axis range for bar chart <axis index>, <range start>, <range end>, <interval>
 		}
 		
 		$url.="&chd=t:".$this->getData();
@@ -234,13 +336,27 @@ class GoogleChart {
 		$url.=$this->getLegend();
 		$url.=$this->getLabels();
 		
-		$url.=$this->getChartSize();
+		if ($this->title != "") {
+			$url.="&chtt=".$this->title;
+		}
 		
 		return $url;
 	}
 	
 	public function toURL() {
 		return $this->getURL();
+	}	
+	
+	public function toImg() {
+		return "<img src=\"".$this->toURL()."\" alt=\"".$this->getAltText()."\" title=\"".$this->getTooltip()."\">";
+	}
+	
+	private function add2str($str, $sep, $val) {
+		if ($str == "") {
+			return $val;
+		} else {
+			return $str.=$sep.$val;
+		}
 	}	
 	
 }

@@ -1,16 +1,42 @@
 /* Testopia */
+table.testopia_ShowHide {
+    background: #eeeeee;
+    border: 1px #aaa solid;
+    padding: 0.2em;	
+}
+
+/* the main table for showing the results */
 table.testopia_Table {
-    margin: 1em 1em 1em 0;
+    
+    /* to center the complete table
+    margin-left: auto;
+    margin-right: auto; */
     background: #eeeeee;
     border: 1px #aaa solid;
     border-collapse: collapse;
 }
 
+/* the inner table for the report data */
+table.testopia_Table_Data {
+    margin: auto;
+    background: #eeeeee;
+    border: 1px #aaa solid;
+    border-collapse: collapse;
+}
+
+/* the inner table for charts if they are aligned horizontally or in a grid */
+table.testopia_Table_Chart {
+    background: #ffffff;
+    margin: auto;
+}
+
+/* the border for the heading and the standard cell */
 .testopia_Table th, .testopia_Table td {
     border: 1px #aaa solid;
     padding: 0.2em;
 }
 
+/* table header */
 .testopia_Table th {
     background: #bbbbbb;
     text-align: center;
@@ -22,22 +48,103 @@ table.testopia_Table {
     font-weight: bold;
 }
 
+/* the background of the main table */
 .testopia_Background {
     background-color: #ffffff;
+	align: center;
 }
 
+/* a dark cell color for the zebra effect */
 .testopia_CellDark {
     background-color: #dddddd;
 }
 
+/* a light cell color for the zebra effect */
 .testopia_CellLight{
     background-color: #eeeeee;
 }
 
-.testopia_CellLight{
-    background-color: #eeeeee;
-}
-
+/* the total line at the end of the table */
 .testopia_Total{
     background-color: #bbbbbb;
+}
+
+/* a light cell color for the zebra effect */
+.testopia_RowResourceConflict{
+    background-color: #F88017;
+    color: white;
+}
+
+.testopia_NewDay{
+	text-align:center; 
+	background-color:#FFFFDD;
+}
+
+.testopia_TestCaseDue{
+	text-align:center; 
+	background-color:#FFFF00;
+}
+
+.testopia_TestCaseNotDue{
+	text-align:center; 
+}
+
+.testopia_TestCaseProposed{
+	text-align:center; 
+	background-color:#FFFF66;	
+}
+
+.testopia_TestCaseConfirmed{
+	text-align:center;
+}
+
+.testopia_TestCaseDisabled{
+	text-align:center; 
+	background-color:#BBBBBB;
+}
+
+.testopia_TestCaseWarn{ 
+	background-color:#FFFF66;	
+}
+
+.testopia_TestCaseRUNNING{
+	background-color:#3BB9FF;
+	color: white;		
+	text-align:center; 
+}
+
+.testopia_TestCasePAUSED{
+	background-color:#DDDD00;
+	color: black;
+	text-align:center; 		
+}
+
+.testopia_TestCasePASSED{
+	background-color:#00FF00;
+	text-align:center; 	
+}
+
+.testopia_TestCaseIDLE{
+	background-color:#BB0088;
+	color: white;	
+	text-align:center; 	
+}
+
+.testopia_TestCaseERROR{
+	background-color:#FF0000;
+	text-align:center; 	
+}
+
+.testopia_TestCaseFAILED{
+	background-color:#FF0000;
+	text-align:center; 	
+}
+
+.testopia_TestCaseBLOCKED{
+	background-color:#FF0000;
+	text-align:center; 	
+}
+
+.testopia_PriorityP1{
+	background-color:#ff6666;
 }

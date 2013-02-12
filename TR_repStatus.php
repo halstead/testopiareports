@@ -53,18 +53,33 @@ class TR_repStatus extends TR_Template{
 	function getSQL() {				
 		$sql = new TR_SQL;
 		$sql->setConnector($this->getConnector());
-		$sql->setFrom("test_cases");
+		$sql->setFrom("test_case_runs");
 		$sql->addField("test_case_run_status", "name", "Status");
-		$sql->addField("test_case_runs", "case_id", "Count", "count(distinct $1)");
-		$sql->addJoin("Inner", "=", "test_case_runs", "case_id", "test_cases", "case_id");
-		$sql->addJoin("Inner", "=", "test_case_run_status", "case_run_status_id", "test_case_runs", "case_run_status_id");		
-		$sql->addWhere("test_case_runs", "run_id", "=", $this->getRunID());
+		$sql->addField("test_case_runs", "case_run_id", "Count", "count(distinct $1)");
+#		$sql->addJoin("Inner", "=", "test_case_runs", "case_id", "test_cases", "case_id");
+		$sql->addJoin("Inner", "=", "test_case_run_status", "case_run_status_id", "test_case_runs", "case_run_status_id");
+$run_ids =  explode(", ", $this->getRunID());
+$run_counter = 0;
+foreach ($run_ids as $run_id) {
+		if ($run_counter == 0) {
+			$sql->addWhere("test_case_runs", "run_id", "=", $run_id);
+			$run_counter ++;
+		}
+		else {
+			$sql->addWhere("test_case_runs", "run_id", "=", $run_id, "OR");
+		}
+}
+
 $sql->addWhere("test_case_runs", "iscurrent", "=", "1", "AND");#EDITED: added this line to use only current build/environment for ca case run
-		$sql->addGroupSort("Group","test_case_runs", "run_id");
+#		$sql->addGroupSort("Group","test_case_runs", "run_id");
 		$sql->addGroupSort("Group","test_case_run_status", "name");
-		$sql->addGroupSort("Order","test_case_run_status", "name");		
+#		$sql->addGroupSort("Order","test_case_run_status", "name");
 				
+#var_dump($sql->toSQL());
+#exit;
 		return $sql->toSQL();
+
+
 	}	
 		
 	function getGoogleChartLink( &$google, $result, $type, $chart ) {

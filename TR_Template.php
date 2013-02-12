@@ -116,6 +116,9 @@ abstract class TR_Template {
 		$this->arguments=$param;
 	}
 
+	function getVersions() {
+		return $this->arguments->get(TestopiaParameters::$Param_Versions);
+	}
 	function getArgs() {
 		return $this->arguments;
 	}
@@ -854,9 +857,11 @@ abstract class TR_Template {
 	public function getStandardRunHeader() {
 ####################
 #EDITED: This next block gets the test plan name and introduces it in the test run header
-
 		$run_id = $this->getArgs()->get("run_id");
-
+if (strpos($run_id, ",") !== false) {
+	return $this->getReportName()."<br />";
+}
+else {
 		$sql="SELECT ".$this->getConnector()->getTable("test_plans").".name FROM ".$this->getConnector()->getTable("test_plans");
                 $sql.=" JOIN ".$this->getConnector()->getTable("test_runs");
                 $sql.=" ON ".$this->getConnector()->getTable("test_runs").".plan_id = ".$this->getConnector()->getTable("test_plans").".plan_id";
@@ -891,7 +896,8 @@ abstract class TR_Template {
 		}
 		
 #		return $this->getReportName()."<br />"."<a href=\"".$this->getArgs()->get("bzserver")."/tr_show_run.cgi?run_id=".$run_id."\">Test Run ".$run_id." - ".$title."</a>";
-		return $this->getReportName()."<br />"."<a href=\"".$this->getArgs()->get("bzserver")."/tr_show_run.cgi?run_id=".$run_id."\">".$_title." - ".$title."</a>";
+		return $this->getReportName()."<br />"."<a href=\"".$this->getArgs()->get("bzserver")."/tr_show_run.cgi?run_id=".$run_id."\">".$_title." - ".$title."</a>";#EDITED
+}
 	}
 	
 	public function getStandardPlanHeader() {

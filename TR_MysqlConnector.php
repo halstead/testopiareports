@@ -92,8 +92,16 @@ class TR_MysqlConnector {
 		return $this->connected;
 	}
 	
-	public function execute($sql) {
-		return mysql_query($sql, $this->db);		
+	public function execute($sql) { 
+		$result = mysql_query($sql, $this->db);	
+		$errNo = mysql_errno();
+		$error = mysql_error();
+		if ($errNo != "") {
+			$this->setError("MySQL Error:".$errNo." - ".$error); 
+		} else {
+			$this->setError("");
+		}
+		return $result;
 	}
 	
 	public function getRowCount($result) {

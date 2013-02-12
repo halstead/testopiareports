@@ -45,6 +45,7 @@ class TestopiaReport {
 	var $supportedReports=array();
 	var $listSupportedReports=array();
 
+	private $debug;
 	private $params;
 	
 	function TestopiaReport( &$parser, $arguments ) {
@@ -52,6 +53,14 @@ class TestopiaReport {
 
 		$args = $arguments;
 		array_shift( $args );
+		$this->debug = new TestopiaDebug;	
+		$this->params = new TestopiaParameters( $args, $this );
+		
+		if ($this->params->get("debug") == "true") {
+			$this->debug->debugOn(true);
+		} else  {
+			$this->debug->debugOn(false);
+		}
 		$this->params = new TestopiaParameters( $args, $this );
 	}
 	
@@ -97,6 +106,8 @@ class TestopiaReport {
 	public function render() {		
 		global $wgTestopiaReports;
 		global $wgDBserver,$wgDBname,$wgDBuser,$wgDBpassword;
+		global $wgScriptPath;
+		global $trHeaderIncluded;
 		
 		#
 		# first: check for parameter errors
@@ -116,8 +127,8 @@ class TestopiaReport {
 		$this->database=$this->getProperty("database");
 		$this->host=$this->getProperty("host");
 		$this->password=$this->getProperty("password");
-		$this->params->set("ploticus", $this->getProperty("ploticus"));
 		$this->params->set("chartdevice", $this->getProperty("chartdevice"));
+		$this->params->set("graphviz", $this->getProperty("graphviz"));
 				
 		$connector;
 		switch ($this->dbdriver) {
@@ -158,15 +169,94 @@ class TestopiaReport {
 		$report->setContext( $this );
 		
 		#
-		#
-		#
-		global $wgScriptPath;
-		$this->parser->mOutput->addHeadItem('<link rel="stylesheet" type="text/css" media="screen, projection" href="' . $wgScriptPath . '/extensions/TestopiaReports/skins/tr_main.css" />');
+		# adding stylesheet and scrip
+		#		
+		if (!$trHeaderIncluded) {
+			$trHeaderIncluded = true;
+			
+			$this->parser->mOutput->addHeadItem('<link rel="stylesheet" type="text/css" media="screen, projection" href="' . $wgScriptPath . '/extensions/TestopiaReports/skins/tr_main.css" />');
+			$script=<<< EOH
+<script type= "text/javascript">
+var browserType;
+
+if (document.layers) {browserType = "nn4"}
+if (document.all) {browserType = "ie"}
+if (window.navigator.userAgent.toLowerCase().match("gecko")) {
+ browserType= "gecko"
+}
+
+function hide(id) {
+  if (browserType == "gecko" )
+     document.poppedLayer = 
+         eval('document.getElementById(id)');
+  else if (browserType == "ie")
+     document.poppedLayer = 
+        eval('document.getElementById(id)');
+  else
+     document.poppedLayer =   
+        eval('document.layers[id]');
+  document.poppedLayer.style.display = "none";
+}
+
+function show(id) {
+  if (browserType == "gecko" )
+     document.poppedLayer = 
+         eval('document.getElementById(id)');
+  else if (browserType == "ie")
+     document.poppedLayer = 
+        eval('document.getElementById(id)');
+  else
+     document.poppedLayer = 
+         eval('document.layers[id]');
+  document.poppedLayer.style.display = "inline";
+}
+</script>
+EOH;
+
+			$this->parser->mOutput->addHeadItem($script);
+		}
 		
 		#
 		# render report
 		#
-		return $report->render();
+		$output = $report->render().$this->debug->toHTML(); 
+		
+		#
+		# attach the show/hide if needed
+		#
+		if ($this->params->get("showhide") == "true" and $this->params->get("nudechart") == "false") {
+			$show = $this->getMessageText("trReport_show");
+			if ($this->params->get("hidden") == "true") {
+				$display = "inline";
+				$displaydata = "none";
+			} else {
+				$display = "none";
+				$displaydata = "inline";
+			}
+			
+			if (array_key_exists(1,$report->hideID)) {
+				/*$showhide = "<form><div style=\"text-align:center\" id=\"".$report->hideID[2]."\" style=\"display:".$display."\"><table class=\"testopia_Table\"><tr><td>";
+				$showhide.= "<input type=button onClick=\"show('".$report->hideID[3]."');show('".$report->hideID[1]."');hide('".$report->hideID[2]."');hide('".$report->hideID[4]."');\" value=\"".$show."\">";
+				$output = $showhide."</td><td><div id=\"".$report->hideID[4]."\" style=\"display:".$display."\"><b>".$report->header."</b></td></tr></table></div></form><div id=\"".$report->hideID[3]."\" style=\"display:".$displaydata."\">".$output."</div>";
+				*/
+
+				$showhide = "<form><div style=\"text-align:center\" id=\"".$report->hideID[2]."\" style=\"display:".$display."\">";
+				$showhide.= "<table class=\"testopia_ShowHide\"><tr><td>";
+				$showhide.= "<div style=\"float:left; margin-right:10px; text-align:center \">";
+				$showhide.= "<input type=button onClick=\"show('".$report->hideID[3]."');show('".$report->hideID[1]."');hide('".$report->hideID[2]."');hide('".$report->hideID[4]."');\" value=\"".$show."\">";
+				$showhide.= "</div>";
+				$showhide.= "<div style=\"float:left; text-align:center\">";
+				$showhide.=	"<b>".$report->header."</b>";
+				$showhide.= "</div>";
+				$showhide.= "</td></tr></table>";
+				$showhide.= "</div>";
+				$showhide.= "</form>";
+				$showhide.= "<div id=\"".$report->hideID[3]."\" style=\"display:".$displaydata."\">".$output."</div>"; 	
+				$output =  $showhide;
+				
+			}
+		}
+		return $output;
 	}
 	
 	/**
@@ -199,6 +289,10 @@ class TestopiaReport {
 		array_shift( $args );	
 		wfLoadExtensionMessages( 'TestopiaReports' );
 		return wfMsgForContent($key,$args);
+	}
+	
+	public function getDebug() {
+		return $this->debug;
 	}
 }
 ?>

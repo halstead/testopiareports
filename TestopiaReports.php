@@ -35,13 +35,15 @@ $wgAutoloadClasses['TR_PGConnector']     = $wgTestopiaReportsIncludes."TR_PGConn
 $wgAutoloadClasses['TR_Colors']          = $wgTestopiaReportsIncludes."TR_Colors.php";
 $wgAutoloadClasses['TR_Template']        = $wgTestopiaReportsIncludes."TR_Template.php";
 $wgAutoloadClasses['GoogleChart']        = $wgTestopiaReportsIncludes."GoogleChart.php";
+$wgAutoloadClasses['TestopiaDebug']      = $wgTestopiaReportsIncludes."TestopiaDebug.php";
+$wgAutoloadClasses['TR_SQL']      		 = $wgTestopiaReportsIncludes."TR_SQL.php";
 
 /**
 * Extension setup
 */
 $wgExtensionCredits['parserhook'][] = array(
         'name' => 'TestopiaReports',
-        'version' => '0.1',
+        'version' => '0.4',
         'url' => 'http://www.mediawiki.org/wiki/Extension:Testopia_Reports',
         'author' => 'Andreas Mueller',
         'description' => 'Providing of [http://www.mozilla.org/projects/testopia/ Testopia] reports and charts'

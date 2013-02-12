@@ -1,0 +1,15 @@
+- have an eye on TR_Colors: decouple the colors from the actual name of the values delivered by the SQL query
+- filter for reports (fields and expressions)
+- freestyle report
+- new report "Top Bugs" (This report displays the bugs found in test cases within the test plan ordered by the bugs attached
+	to the most test cases. In other words, which bugs are failing the most test cases.)
+- new report "Estimated vs Actual Time" Test cases can have a time estimate associated with them. This can then be used in conjunction 
+	with the case-runs for that case to determine the actual running time. To do this, test case-runs
+	must be placed in the RUNNING state when a test is started. This then starts the stopwatch so to
+	speak for that case in that run. When a case is passed or failed the difference of the two times is
+	calculated. The average of all case-runs in all runs for this case is then used to calculate this
+	report.
+- new report (or different view):list of all test cases in one run with number of bugs attached
+- show/hide for data table and charts (maybe no button but a small symbol)
+- csv export
+- change all SQLs to SQL objects (this could be also used to get technical table and field name for translating them)

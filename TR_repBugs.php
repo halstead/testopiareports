@@ -73,16 +73,33 @@ class TR_repBugs extends TR_Template{
 		$sql->addField("bugs", "bug_severity", "Severity");
 		$sql->addField("test_case_bugs", "case_id", "Test Case");
 		$sql->addField("bugs", "short_desc", "Description");
+		$sql->addField("bugs", "version", "Version");
 		$sql->addJoin("Inner", "=", "test_case_bugs", "bug_id", "bugs", "bug_id");
-		$sql->addJoin("Inner", "=", "test_case_runs", "case_run_id", "test_case_bugs", "case_run_id");		
-		$sql->addWhere("test_case_runs", "run_id", "=", $this->getRunID());
-$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
-		$sql->addGroupSort("Order", "bugs", "priority");
-		$sql->addGroupSort("Order", "bugs", "bug_status"); #EDITED: added this line to order by bug status as well.
-		$sql->addGroupSort("Order", "bugs", "bug_id");
-	
+		$sql->addJoin("Inner", "=", "test_case_runs", "case_id", "test_case_bugs", "case_id"); #EDITED: modified this line to get bugs from all environments and builds
+#EDITED: The below block adds multiple runs report aggregatin and version filtering
+$run_ids =  explode(", ", $this->getRunID());
+$run_counter = 0;
+$versions = explode(", ", $this->getVersions());
+foreach ($run_ids as $run_id) {
+foreach ($versions as $version) {
+		if ($run_counter == 0) {
+		$sql->addWhere("test_case_runs", "run_id", "=", $run_id);
+		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
+		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"RESOLVED\"", "AND"); #EDITED: Added this line to rule out verified bugs
+		$sql->addWhere("bugs", "version", "=", $version, "AND"); #EDITED: Added this line to filter by version if available
+		$run_counter ++;
+		}
+		else {
+		$sql->addWhere("test_case_runs", "run_id", "=", $run_id, "OR");
+		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
+		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"RESOLVED\"", "AND"); #EDITED: Added this line to rule out verified bugs
+		$sql->addWhere("bugs", "version", "=", $version, "AND");
 
-		return $sql->toSQL();
+		}
+}
+}
+		$sql->addGroupSort("Group", "bugs", "bug_id");
+	return $sql->toSQL();
 	}
 	
 	function renderCell($type, $colNo, $field_name, $value, $lineNo, $line) {

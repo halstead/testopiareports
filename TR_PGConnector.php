@@ -71,7 +71,16 @@ class TR_PGConnector {
 	}
 	
 	public function execute($sql,$db) {
-		return pg_query($db,$sql);		
+		$result = pg_query($db,$sql);
+		$errNo = pg_errno();
+		$error = pg_error();
+		if ($errNo != "") {
+			$this->setError("PGSQL Error:".$errNo." - ".$error); 
+		} else {
+			$this->setError("");
+		}
+			
+		return $result; 		
 	}
 	
 	public function getRowCount($result) {
