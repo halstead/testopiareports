@@ -1,15 +1,22 @@
 <?php
+#EDITED: This file was modified to make the report function corectly.
+#EDITED: To track the changes made besides the commented-out sections, follow the tag "EDITED"
 
 class TR_repPriority extends TR_Template{
 
 	var $supportedCharts = array(
-		"status" => "status",
-		"prio"   => "prio"
+		"status" => array("parameter"=>"status", 
+ 	 					 "title"     =>"Test Case Status",
+						 "tooltip"   =>"Test Case Status",
+						 "alttext"   =>"Test Case Status"),
+		"prio"   => array("parameter"=>"prio", 
+ 	 					 "title"     =>"Test Case Priorities",
+						 "tooltip"   =>"Test Case Priorities",
+						 "alttext"   =>"Test Case Priorities")
 	);
 	
 	var $supportedChartTypes = array(
 		"google"   => array( "bar", "pie", "pie3" ),
-		"ploticus" => array()
 	);
 
 	function getSupportedChartsArr() {
@@ -24,6 +31,10 @@ class TR_repPriority extends TR_Template{
 		return $this->getStandardRunHeader();
 	}
 
+	function getReportFooter() {
+		return "";
+	}	
+	
 	function getReportName() {
 		return "Priority Breakdown Report";
 	}
@@ -41,49 +52,47 @@ class TR_repPriority extends TR_Template{
 		return $output;
 	}
 	
-	function getSQL() {		
-		$con=$this->getConnector();
+	function getSQL() {				
+		$sql = new TR_SQL;
+		$sql->setConnector($this->getConnector());
+		$sql->setFrom("test_cases");
+		$sql->addField("priority", "value", "Priority");
+		$sql->addField("test_case_run_status", "name", "Status");
+		$sql->addField("test_case_runs", "case_id", "Count", "count(distinct $1)");		
+		$sql->addJoin("Inner", "=", "test_case_runs", "case_id", "test_cases", "case_id");
+		$sql->addJoin("Inner", "=", "priority", "id", "test_cases", "priority_id");
+		$sql->addJoin("Inner", "=", "test_case_run_status", "case_run_status_id", "test_case_runs", "case_run_status_id");		
+		$sql->addWhere("test_case_runs", "run_id", "=", $this->getRunID(), "");
+$sql->addWhere("test_case_runs", "iscurrent", "=", "1", "AND");#EDITED: added this line to use only current build/environment for ca case run
+		$sql->addGroupSort("Group", "priority", "value");#EDITED: changed Priority to priority for the sql sentance to be correct
+		$sql->addGroupSort("Group", "test_case_run_status", "name"); #EDITED: added test_case_run_status as the field was ampty and no sorting was done.
+		$sql->addGroupSort("Order", "priority", "value");
 		
-		$sql="";	
-		$sql ="SELECT ".$con->getTable("priority").".value as Priority, ".$con->getTable("test_case_run_status").".name as Status,";
-		$sql.="count(distinct ".$con->getTable("test_case_runs").".case_id) as Count ";
-		$sql.=" FROM ".$con->getTable("test_cases"); 
-		# link the test cases to the run
-		$sql.=" INNER JOIN ".$con->getTable("test_case_runs"); 
-		$sql.=" ON ".$con->getTable("test_cases").".case_id = ".$con->getTable("test_case_runs").".case_id";
-		# get value for priority
-		$sql.=" INNER JOIN ".$con->getTable("priority");
-		$sql.=" ON ".$con->getTable("test_cases").".priority_id = ".$con->getTable("priority").".id";
-		# get value for test case run status
-		$sql.=" INNER JOIN ".$con->getTable("test_case_run_status");
-		$sql.=" ON ".$con->getTable("test_case_runs").".case_run_status_id = ".$con->getTable("test_case_run_status").".case_run_status_id";
+		$sqlStr = $sql->toSQL();
+		return $sqlStr;
+	}	
 		
-		$runID = $this->getRunID();
-		if ($runID) {
-			$sql.=" WHERE run_id = ".$runID;
-			$sql.=" GROUP BY value, name";
-		} else {
-			$sql.=" GROUP BY run_id, value, case_run_status_id";
-		}
-		
-		$sql.=" ORDER BY Priority";
-		$sql.=";";		
-		return $sql;
-	}
-
-	function renderCell($colNo, $field_name, $value, $lineNo, $line) {
-		return "";
-	}		
-		
-	function getPloticusFileBasename() {
-	}
-	function getPloticusData( $result, $type ) {
-	}
 	function getGoogleChartLink( &$google, $result, $type, $chart ) {
+		$field = "";
+		$color = "";
+		switch ($chart) {
+			case "status":
+				$field="Status";
+				$color="tcrs";
+				break;
+			case "prio"  : 
+				$field="Priority";
+				$color="prio";
+				break;
+			default:
+				$field="Priority";
+				$color="prio";			
+		}
+
 		if ($chart) {
-			$this->getGoogleChartOneRowCount($google,$result, $type, $chart);
+			$this->getGoogleChartOneRowCount($google,$result, $type, $chart, $field, "Count", $color, "");
 		} else {
-			$this->getGoogleChartOneRowCount($google,$result, $type, "prio");
+			$this->getGoogleChartOneRowCount($google,$result, $type, "prio", $field, "Count", $color, "");
 		}
 	}
 }

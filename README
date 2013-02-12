@@ -1,0 +1,16 @@
+To apply this patch, replace the original files inside /mediawiki*/extensions/TestopiaReports/ with the files in this archive. Please make backups to be safe.
+
+To finish fixing the Agenda report type, comment out the graphviz line inside LocalSettings.php and remove the comma behind the previous line like so:
+
+$wgTestopiaReports = array(
+ 'host'        => "localhost",.
+ 'database'    => "bugzilla",
+ 'user'        => "bugzilla",
+ 'password'    => "somepassword",
+ 'bzserver'    => "http://localhost/bugzilla",
+ 'chartdevice' => "google"
+# 'graphviz'    => "/usr/bin/dot"
+);
+
+
+That should do it!
