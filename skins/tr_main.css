@@ -1,0 +1,43 @@
+/* Testopia */
+table.testopia_Table {
+    margin: 1em 1em 1em 0;
+    background: #eeeeee;
+    border: 1px #aaa solid;
+    border-collapse: collapse;
+}
+
+.testopia_Table th, .testopia_Table td {
+    border: 1px #aaa solid;
+    padding: 0.2em;
+}
+
+.testopia_Table th {
+    background: #bbbbbb;
+    text-align: center;
+}
+
+.testopia_Table caption {
+    margin-left: inherit;
+    margin-right: inherit;
+    font-weight: bold;
+}
+
+.testopia_Background {
+    background-color: #ffffff;
+}
+
+.testopia_CellDark {
+    background-color: #dddddd;
+}
+
+.testopia_CellLight{
+    background-color: #eeeeee;
+}
+
+.testopia_CellLight{
+    background-color: #eeeeee;
+}
+
+.testopia_Total{
+    background-color: #bbbbbb;
+}

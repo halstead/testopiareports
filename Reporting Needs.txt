@@ -1,0 +1,26 @@
+Allgemein:
+- in allgemeinen Settings class für die Tabelle angeben
+- Callback Funktionen aus dem generischen HTML Renderer für Links und Färbung?
+
+Bugs:
+- Link zum Case
+- Link zum Bug
+- farbliche Hervorhebung der Prioritäten?
+
+Completition Report:
+- Total of test cases
+- Percent and number: Complete -> http://10.42.174.167/bugzilla/tr_show_run.cgi?run_id=5&case_run_status=PASSED&case_run_status=FAILED&case_run_status=BLOCKED
+- Percent and number: Not complete -> http://10.42.174.167/bugzilla/tr_show_run.cgi?run_id=5&case_run_status=IDLE&case_run_status=PAUSED&case_run_status=RUNNING&case_run_status=ERROR
+- percent and number: Passed -> http://10.42.174.167/bugzilla/tr_show_run.cgi?run_id=5&case_run_status=PASSED
+- percent and number: failed -> http://10.42.174.167/bugzilla/tr_show_run.cgi?run_id=5&case_run_status=FAILED
+- percent and number: blocked -> 
+- Diagramm (abs. Zahlen): complete, passed, failed, blocked
+- list of bugs listed with drill-down to bugs (http://10.42.174.167/bugzilla/buglist.cgi?bug_id=15,16)
+
+Tachometer:
+http://chart.apis.google.com/chart?chs=225x125&cht=gom&chd=t:70&chl=Hello
+
+
+http://chart.apis.google.com/chart?cht=bvg&chbh=a&chs=200x125&chd=t:1,2,3,4|5,5,5,5&chco=4d89f9,c6d9fd&chds=0,5&chxt=y&chxr=0,0,5,1
+
+http://chart.apis.google.com/chart?cht=bvg&chg=0,1&chd=t:1,2,1&chds=0,2&chxt=y&chxr=0,0,2,1&chco=FF0000|990066|00FF00&chdl=ERROR(1)|IDLE(2)|PASSED(1)&chs=300x100
