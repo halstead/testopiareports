@@ -80,7 +80,7 @@ $sqlStr=$sql->toSQL();
 		$sql = new TR_SQL;
 		$sql->setConnector($this->getConnector()); 
 		$sql->setFrom("bugs"); 
-		$sql->addField("bugs", "bug_id", "ID");  
+		$sql->addField("bugs", "bug_id", "ID", "GROUP_CONCAT(DISTINCT $1)");#EDITED: This is basically for removing duplicate bug entries
 		$sql->addField("bugs", "bug_status", "Status"); 
 		$sql->addField("bugs", "bug_severity", "Severity"); 
 		$sql->addField("test_case_bugs", "case_id", "Test_Case"); 
@@ -110,9 +110,10 @@ foreach ($versions as $version) {
 		}
 }
 }
-		$sql->addGroupSort("Group", "bugs", "bug_id");
+		$sql->addGroupSort("Group", "test_case_bugs", "case_id");
 $sqlStr2=$sql->toSQL();
-
+#var_dump($sqlStr2);
+#exit;
 	return "SELECT table1.Test_Case, table1.Summary, table1.Category, table1.Status, GROUP_CONCAT(table2.ID) \"Bugs\" FROM ($sqlStr) AS table1 LEFT JOIN ($sqlStr2) as table2 ON table2.Test_Case = table1.Test_Case GROUP BY table1.Test_Case";
 	}
 	
