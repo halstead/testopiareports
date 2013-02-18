@@ -85,14 +85,14 @@ foreach ($versions as $version) {
 		if ($run_counter == 0) {
 		$sql->addWhere("test_case_runs", "run_id", "=", $run_id);
 		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
-		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"RESOLVED\"", "AND"); #EDITED: Added this line to rule out verified bugs
+#		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"RESOLVED\"", "AND"); #EDITED: Added this line to rule out resolved bugs
 		$sql->addWhere("bugs", "version", "=", $version, "AND"); #EDITED: Added this line to filter by version if available
 		$run_counter ++;
 		}
 		else {
 		$sql->addWhere("test_case_runs", "run_id", "=", $run_id, "OR");
 		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
-		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"RESOLVED\"", "AND"); #EDITED: Added this line to rule out verified bugs
+#		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"RESOLVED\"", "AND"); #EDITED: Added this line to rule out resolved bugs
 		$sql->addWhere("bugs", "version", "=", $version, "AND");
 
 		}
