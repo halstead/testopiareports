@@ -80,7 +80,7 @@ $sqlStr=$sql->toSQL();
 		$sql = new TR_SQL;
 		$sql->setConnector($this->getConnector()); 
 		$sql->setFrom("bugs"); 
-		$sql->addField("bugs", "bug_id", "ID", "GROUP_CONCAT(DISTINCT $1)");#EDITED: This is basically for removing duplicate bug entries
+		$sql->addField("bugs", "bug_id", "ID", "GROUP_CONCAT(DISTINCT $1)");#EDITED: This basically is for removing duplicate bug entries
 		$sql->addField("bugs", "bug_status", "Status"); 
 		$sql->addField("bugs", "bug_severity", "Severity"); 
 		$sql->addField("test_case_bugs", "case_id", "Test_Case"); 
@@ -99,6 +99,10 @@ foreach ($versions as $version) {
 		$sql->addWhere("test_case_runs", "run_id", "=", $run_id);
 		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
 #		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"RESOLVED\"", "AND"); #EDITED: Added this line to rule out resolved bugs
+		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"WONTFIX\"", "AND");
+		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"INVALID\"", "AND");
+		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"OBSOLETE\"", "AND");
+		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"NOTABUG\"", "AND");
 		$sql->addWhere("bugs", "version", "=", $version, "AND"); #EDITED: Added this line to filter by version if available
 		$run_counter ++;
 		}
@@ -106,6 +110,10 @@ foreach ($versions as $version) {
 		$sql->addWhere("test_case_runs", "run_id", "=", $run_id, "OR");
 		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
 #		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"RESOLVED\"", "AND"); #EDITED: Added this line to rule out resolved bugs
+		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"WONTFIX\"", "AND");
+		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"INVALID\"", "AND");
+		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"OBSOLETE\"", "AND");
+		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"NOTABUG\"", "AND");
 		$sql->addWhere("bugs", "version", "=", $version, "AND");
 		}
 }
