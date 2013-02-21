@@ -70,37 +70,39 @@ class TR_repBugs extends TR_Template{
 		$sql->addField("bugs", "priority", "Priority");
 		$sql->addField("bugs", "bug_severity", "Severity");
 		$sql->addField("bugs", "bug_status", "Status");
+		$sql->addField("bugs", "resolution", "Resolution");
 		$sql->addField("bugs", "bug_severity", "Severity");
 		$sql->addField("test_case_bugs", "case_id", "Test Case");
 		$sql->addField("bugs", "short_desc", "Description");
 		$sql->addField("bugs", "version", "Version");
 		$sql->addJoin("Inner", "=", "test_case_bugs", "bug_id", "bugs", "bug_id");
-		$sql->addJoin("Inner", "=", "test_case_runs", "case_id", "test_case_bugs", "case_id"); #EDITED: modified this line to get bugs from all environments and builds
+#		$sql->addJoin("Inner", "=", "test_case_runs", "case_id", "test_case_bugs", "case_id"); #EDITED: replace the below line with  this line to get bugs from all environments and builds
+		$sql->addJoin("Inner", "=", "test_case_runs", "case_run_id", "test_case_bugs", "case_run_id");
 #EDITED: The below block adds multiple runs report aggregatin and version filtering
 $run_ids =  explode(", ", $this->getRunID());
 $run_counter = 0;
 $versions = explode(", ", $this->getVersions());
 foreach ($run_ids as $run_id) {
 foreach ($versions as $version) {
-		if ($run_counter == 0) {
+		if ($run_counter == 0) { # Check if this is the first parsing. If not, add "OR" to the sql sentence
 		$sql->addWhere("test_case_runs", "run_id", "=", $run_id);
-		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
+#		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
 #		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"RESOLVED\"", "AND"); #EDITED: Added this line to rule out resolved bugs
-		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"WONTFIX\"", "AND");
-		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"INVALID\"", "AND");
-		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"OBSOLETE\"", "AND");
-		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"NOTABUG\"", "AND");
+#		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"WONTFIX\"", "AND");
+#		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"INVALID\"", "AND");
+#		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"OBSOLETE\"", "AND");
+#		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"NOTABUG\"", "AND");
 		$sql->addWhere("bugs", "version", "=", $version, "AND"); #EDITED: Added this line to filter by version if available
 		$run_counter ++;
 		}
 		else {
 		$sql->addWhere("test_case_runs", "run_id", "=", $run_id, "OR");
-		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
+#		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
 #		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"RESOLVED\"", "AND"); #EDITED: Added this line to rule out resolved bugs
-		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"WONTFIX\"", "AND");
-		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"INVALID\"", "AND");
-		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"OBSOLETE\"", "AND");
-		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"NOTABUG\"", "AND");
+#		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"WONTFIX\"", "AND");
+#		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"INVALID\"", "AND");
+#		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"OBSOLETE\"", "AND");
+#		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"NOTABUG\"", "AND");
 		$sql->addWhere("bugs", "version", "=", $version, "AND");
 
 		}
