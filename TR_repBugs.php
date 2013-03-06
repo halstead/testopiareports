@@ -75,6 +75,7 @@ class TR_repBugs extends TR_Template{
 		$sql->addField("test_case_bugs", "case_id", "Test Case");
 		$sql->addField("bugs", "short_desc", "Description");
 		$sql->addField("bugs", "version", "Version");
+		$sql->addField("bugs", "target_milestone", "Target Milestone");
 		$sql->addJoin("Inner", "=", "test_case_bugs", "bug_id", "bugs", "bug_id");
 #		$sql->addJoin("Inner", "=", "test_case_runs", "case_id", "test_case_bugs", "case_id"); #EDITED: replace the below line with  this line to get bugs from all environments and builds
 		$sql->addJoin("Inner", "=", "test_case_runs", "case_run_id", "test_case_bugs", "case_run_id");

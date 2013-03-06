@@ -139,6 +139,7 @@ from ($sql_temp) as temp_table RIGHT JOIN $test_case_run_status ON temp_table.St
 						$output .= $value;
 						}
                                                 $output.= "</td>";
+
                                                 break;
 				case "Passed":
                                                 $class = "";
@@ -155,12 +156,10 @@ from ($sql_temp) as temp_table RIGHT JOIN $test_case_run_status ON temp_table.St
                                                 $class = "testopia_TestCase"."PAUSED";
                                                 $output = "<td class=\"".$class."\">".$value."</td>";
                                                 break;
-
                         }
                 }
                 return $output;
         }
-
 
 	function getGoogleChartLink( &$google, $result, $type, $chart ) {
 		$color = new TR_Colors;
