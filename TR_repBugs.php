@@ -115,8 +115,13 @@ foreach ($versions as $version) {
 		$sql->addGroupSort("Group", "bugs", "bug_id");
 $sql_temp = $sql->toSQL();
 
+#var_dump($sql_temp);
+#exit;
+
+#return $sql_temp;
+
 return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, table1.Test_Case, table1.Description, table1.Version, table1.Target_Milestone, 
-(TO_DAYS(table1.tr_date)-TO_DAYS(table1.bug_date)) as \"Age(days)\" from ($sql_temp) as table1";
+(IFNULL(TO_DAYS(table1.tr_date),0)-TO_DAYS(table1.bug_date)) as \"Age(days)\" from ($sql_temp) as table1";
 
 #return $sql_temp;
 	}
@@ -133,7 +138,9 @@ return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, tab
 						$output="<td><a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$value."\">".$value."</a></td>";
 						break;
 				case "Age(days)":
-						if ($value < "0") {
+						if ($value < "-700000") {
+							$output = "<td align=\"center\">error</td>";
+						} elseif ($value < "0") {
 							$output ="<td align=\"center\"><FONT COLOR=\"#FF4000\">NEW</FONT></td>";
 						} else {
 							$output = "<td align=\"center\">".$value."</td>";
