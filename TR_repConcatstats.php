@@ -85,15 +85,19 @@ from ($sql_temp) as temp_table RIGHT JOIN $test_case_run_status ON temp_table.St
 
 	if ($run_counter == 0) {
 		$result = "SELECT IFNULL(table1.Test_Plan,IFNULL(table2.Test_Plan,IFNULL(table3.Test_Plan,\"NOT READY: $run_id\"))) AS \"Test Plan\", 
-		IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY: $run_id\"))) AS \"Environment\", table1.Passed, table1.bugs as \"Issues\", 
-		table2.Failed, table2.bugs as \"Failing bugs\", table3.Blocked, table3.bugs as \"Blocking bugs\" 
+		IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY: $run_id\"))) AS \"Environment\",
+		 FORMAT((table1.passed*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Passed, table1.bugs as \"Other issues\", 
+		 FORMAT((table2.Failed*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Failed, table2.bugs as \"Failing bugs\", 
+		 FORMAT((table3.Blocked*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Blocked, table3.bugs as \"Blocking bugs\" 
 		FROM ($sqlPASSED) AS table1 INNER JOIN ($sqlFAILED) as table2 ON table1.run_id=table2.run_id INNER JOIN ($sqlBLOCKED) as table3 ON table1.run_id=table3.run_id";
 		$run_counter++;
 	}
 	else {
 		$result .= " UNION ALL SELECT IFNULL(table1.Test_Plan,IFNULL(table2.Test_Plan,IFNULL(table3.Test_Plan,\"NOT READY: $run_id\"))) AS \"Test Plan\",
-		IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY: $run_id\"))) AS \"Environment\", table1.Passed, table1.bugs as \"Encountered issues\",
-		table2.Failed, table2.bugs as \"Failing bugs\", table3.Blocked, table3.bugs as \"Blocking bugs\"
+		IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY: $run_id\"))) AS \"Environment\",
+		 FORMAT((table1.passed*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Passed, table1.bugs as \"Other issues\",
+		 FORMAT((table2.Failed*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Failed, table2.bugs as \"Failing bugs\",
+		 FORMAT((table3.Blocked*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Blocked, table3.bugs as \"Blocking bugs\"
 		FROM ($sqlPASSED) AS table1 INNER JOIN ($sqlFAILED) as table2 ON table1.run_id=table2.run_id INNER JOIN ($sqlBLOCKED) as table3 ON table1.run_id=table3.run_id";
 
 }
@@ -144,17 +148,17 @@ from ($sql_temp) as temp_table RIGHT JOIN $test_case_run_status ON temp_table.St
 				case "Passed":
                                                 $class = "";
                                                 $class = "testopia_TestCase"."PASSED";
-                                                $output = "<td class=\"".$class."\">".$value."</td>";
+                                                $output = "<td class=\"".$class."\">".$value."%</td>";
                                                 break;
 				case "Failed":
                                                 $class = "";
                                                 $class = "testopia_TestCase"."FAILED";
-                                                $output = "<td class=\"".$class."\">".$value."</td>";
+                                                $output = "<td class=\"".$class."\">".$value."%</td>";
                                                 break;
 				case "Blocked":
                                                 $class = "";
                                                 $class = "testopia_TestCase"."PAUSED";
-                                                $output = "<td class=\"".$class."\">".$value."</td>";
+                                                $output = "<td class=\"".$class."\">".$value."%</td>";
                                                 break;
                         }
                 }

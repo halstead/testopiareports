@@ -71,14 +71,17 @@ class TR_repBugs extends TR_Template{
 		$sql->addField("bugs", "bug_severity", "Severity");
 		$sql->addField("bugs", "bug_status", "Status");
 		$sql->addField("bugs", "resolution", "Resolution");
-		$sql->addField("bugs", "bug_severity", "Severity");
-		$sql->addField("test_case_bugs", "case_id", "Test Case");
+#		$sql->addField("bugs", "bug_severity", "Severity");
+		$sql->addField("test_case_bugs", "case_id", "Test_Case");
 		$sql->addField("bugs", "short_desc", "Description");
 		$sql->addField("bugs", "version", "Version");
-		$sql->addField("bugs", "target_milestone", "Target Milestone");
+		$sql->addField("bugs", "target_milestone", "Target_Milestone");
+		$sql->addField("test_runs", "summary", "tr_date","SUBSTRING($1,1,10)");
+		$sql->addField("bugs", "creation_ts", "bug_date","SUBSTRING($1,1,10)");
 		$sql->addJoin("Inner", "=", "test_case_bugs", "bug_id", "bugs", "bug_id");
 #		$sql->addJoin("Inner", "=", "test_case_runs", "case_id", "test_case_bugs", "case_id"); #EDITED: replace the below line with  this line to get bugs from all environments and builds
 		$sql->addJoin("Inner", "=", "test_case_runs", "case_run_id", "test_case_bugs", "case_run_id");
+		$sql->addJoin("Inner", "=", "test_runs", "run_id", "test_case_runs", "run_id");
 #EDITED: The below block adds multiple runs report aggregatin and version filtering
 $run_ids =  explode(", ", $this->getRunID());
 $run_counter = 0;
@@ -110,9 +113,14 @@ foreach ($versions as $version) {
 }
 }
 		$sql->addGroupSort("Group", "bugs", "bug_id");
-	return $sql->toSQL();
+$sql_temp = $sql->toSQL();
+
+return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, table1.Test_Case, table1.Description, table1.Version, table1.Target_Milestone, 
+(TO_DAYS(table1.tr_date)-TO_DAYS(table1.bug_date)) as \"Age(days)\" from ($sql_temp) as table1";
+
+#return $sql_temp;
 	}
-	
+
 	function renderCell($type, $colNo, $field_name, $value, $lineNo, $line) {
 		$output = "";
 		
@@ -124,11 +132,17 @@ foreach ($versions as $version) {
 				case "ID"       :
 						$output="<td><a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$value."\">".$value."</a></td>";
 						break;
-				case "Priority" :
-						if ($value == "P1") {
-							$output="<td class=\"testopia_Priority_P1\">".$value."</td>";
+				case "Age(days)":
+						if ($value < "0") {
+							$output ="<td align=\"center\"><FONT COLOR=\"#FF4000\">NEW</FONT></td>";
+						} else {
+							$output = "<td align=\"center\">".$value."</td>";
 						}
-				default			: return $output;
+						break;
+				case "Description":
+						$output= "<td align=\"left\">".$value."</td>";
+						break;
+				default			: return $output= "<td align=\"center\">".$value."</td>";
 			}
 		}
 		return $output;
