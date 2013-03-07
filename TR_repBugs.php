@@ -132,10 +132,10 @@ return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, tab
 		if ($type=="body") {
 			switch ($field_name) {
 				case "Test Case": 
-						$output="<td><a href=\"".$this->getArgs()->get("bzserver")."/tr_show_case.cgi?case_id=".$value."\">".$value."</a></td>";
+						$output="<td align=\"center\"><a href=\"".$this->getArgs()->get("bzserver")."/tr_show_case.cgi?case_id=".$value."\">".$value."</a></td>";
 						break;
 				case "ID"       :
-						$output="<td><a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$value."\">".$value."</a></td>";
+						$output="<td align=\"center\"><a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$value."\">".$value."</a></td>";
 						break;
 				case "Age (days)":
 						if ($value < "-700000") {
