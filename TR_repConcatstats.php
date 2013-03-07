@@ -181,9 +181,25 @@ $sqlBLOCKED ="select * from (".$sql->toSQL().") as temp_table GROUP BY temp_tabl
 						}
 						break;
 				case "Failed":
+						$class = "";
+						if ($value > "70.0") {
+						$class = "testopia_TestCase"."FAILED";
+                                                $output = "<td class=\"".$class."\">".$value."%</td>";
+						} elseif ($value > "30.0") { 
+						$class = "testopia_TestCase"."PAUSED";
+                                                $output = "<td class=\"".$class."\">".$value."%</td>";
+						} else
 						$output = "<td>".$value."%</td>";
 						break;
 				case "Blocked":
+                                                $class = "";
+                                                if ($value > "70.0") {
+                                                $class = "testopia_TestCase"."FAILED";
+                                                $output = "<td class=\"".$class."\">".$value."%</td>";
+                                                } elseif ($value > "30.0") {
+                                                $class = "testopia_TestCase"."PAUSED";
+                                                $output = "<td class=\"".$class."\">".$value."%</td>";
+                                                } else
 						$output = "<td>".$value."%</td>";
 						break;
 			}
