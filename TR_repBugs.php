@@ -120,8 +120,8 @@ $sql_temp = $sql->toSQL();
 
 #return $sql_temp;
 
-return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, table1.Test_Case, table1.Description, table1.Version, table1.Target_Milestone, 
-(IFNULL(TO_DAYS(table1.tr_date),0)-TO_DAYS(table1.bug_date)) as \"Age(days)\" from ($sql_temp) as table1";
+return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, table1.Test_Case as \"Test Case\", table1.Description, table1.Version, table1.Target_Milestone as \"Target Milestone\", 
+(IFNULL(TO_DAYS(table1.tr_date),0)-TO_DAYS(table1.bug_date)) as \"Age (days)\" from ($sql_temp) as table1";
 
 #return $sql_temp;
 	}
@@ -137,7 +137,7 @@ return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, tab
 				case "ID"       :
 						$output="<td><a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$value."\">".$value."</a></td>";
 						break;
-				case "Age(days)":
+				case "Age (days)":
 						if ($value < "-700000") {
 							$output = "<td align=\"center\">error</td>";
 						} elseif ($value < "0") {

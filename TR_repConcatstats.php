@@ -1,22 +1,14 @@
 <?php
-#EDITED: This file was modified to make the report function corectly.
-#EDITED: To track the changes made besides the commented-out sections, follow the tag "EDITED"
 
 class TR_repConcatstats extends TR_Template{
-
-	private $supportedCharts = array();
-	
-	private $supportedChartTypes = array(
-		"google"   => array( "bar", "pie", "pie3" ),
-	);
 
 	function getSupportedChartsArr() {
 		return $this->supportedCharts;
 	}
-	
+
 	function getSupportedChartTypesArr() {
 		return $this->supportedChartTypes;
-	}
+}
 
 	/**
 	* implementation of the abstract function of the super class
@@ -56,49 +48,79 @@ $test_case_run_status = $this->getConnector()->getTable("test_case_run_status");
 $run_ids =  explode(", ", $this->getRunID());
 $run_counter = 0;
 foreach ($run_ids as $run_id) {
-
 		$sql = new TR_SQL;
 		$sql->setConnector($this->getConnector());
 		$sql->setFrom("test_plans");
-		$sql->addField("test_case_runs", "run_id");
+		$sql->addField("test_case_runs", "run_id", "run_id", "IFNULL($1,$run_id)");
 		$sql->addField("test_plans", "name", "Test_Plan");
 		$sql->addField("test_environments", "name", "Environment");
-		$sql->addField("test_case_runs", "case_run_status_id", "Status");
-		$sql->addField("test_case_bugs", "bug_id", "bug_id", "GROUP_CONCAT(DISTINCT $1)");
+                $sql->addField("test_case_runs", "case_id", "status", "IFNULL(COUNT(DISTINCT $1),0)");
+		$sql->addField("test_case_bugs", "bug_id", "bugs", "IFNULL(GROUP_CONCAT(DISTINCT $1),\"none\")");
 		$sql->addJoin("Inner", "=", "test_runs", "plan_id", "test_plans", "plan_id");
 		$sql->addJoin("Inner", "=", "test_environments", "environment_id", "test_runs", "environment_id");
 		$sql->addJoin("Inner", "=", "test_case_runs", "run_id", "test_runs", "run_id");
 		$sql->addJoin("Left", "=", "test_case_bugs", "case_run_id", "test_case_runs", "case_run_id");
+		$sql->addJoin("Inner", "=", "test_case_run_status", "case_run_status_id", "test_case_runs", "case_run_status_id");
 		$sql->addWhere("test_case_runs", "run_id", "=", $run_id);
 		$sql->addWhere("test_case_runs", "iscurrent", "=", "1", "AND");
-		$sql->addGroupSort("Group","test_case_runs","case_run_id");
-$sql_temp = $sql->toSQL();
+		$sql->addWhere("test_case_run_status", "case_run_status_id", "=", "2", "AND");
+$sqlPASSED = "select * from (".$sql->toSQL().") as temp_table GROUP BY temp_table.run_id";
+#EDITED: The GROUP BY is done outside the first query because, unknown why, the result was an empty table despite the IFNULL statements.
+#This resulted in an empty final result if any test run had blocked, passed or failed columns with a value of "0".
 
-$sqlPASSED = "select IFNULL(temp_table.run_id,$run_id) AS run_id, temp_table.Test_Plan, temp_table.Environment, IFNULL(count(temp_table.Status),0) as PASSED, IFNULL(temp_table.bug_id,\"none\") AS bugs 
-from ($sql_temp) as temp_table RIGHT JOIN $test_case_run_status ON temp_table.Status=$test_case_run_status.case_run_status_id WHERE $test_case_run_status.case_run_status_id=2 GROUP BY temp_table.run_id";
+$sql = new TR_SQL;
+                $sql->setConnector($this->getConnector());
+                $sql->setFrom("test_plans");
+                $sql->addField("test_case_runs", "run_id", "run_id", "IFNULL($1,$run_id)");
+                $sql->addField("test_plans", "name", "Test_Plan");
+                $sql->addField("test_environments", "name", "Environment");
+                $sql->addField("test_case_runs", "case_id", "status", "IFNULL(COUNT(DISTINCT $1),0)");
+                $sql->addField("test_case_bugs", "bug_id", "bugs", "IFNULL(GROUP_CONCAT(DISTINCT $1),\"none\")");
+                $sql->addJoin("Inner", "=", "test_runs", "plan_id", "test_plans", "plan_id");
+                $sql->addJoin("Inner", "=", "test_environments", "environment_id", "test_runs", "environment_id");
+                $sql->addJoin("Inner", "=", "test_case_runs", "run_id", "test_runs", "run_id");
+                $sql->addJoin("Left", "=", "test_case_bugs", "case_run_id", "test_case_runs", "case_run_id");
+                $sql->addJoin("Inner", "=", "test_case_run_status", "case_run_status_id", "test_case_runs", "case_run_status_id");
+                $sql->addWhere("test_case_runs", "run_id", "=", $run_id);
+                $sql->addWhere("test_case_runs", "iscurrent", "=", "1", "AND");
+                $sql->addWhere("test_case_run_status", "case_run_status_id", "=", "3", "AND");
+$sqlFAILED = "select * from (".$sql->toSQL().") as temp_table GROUP BY temp_table.run_id";
 
-$sqlFAILED = "select IFNULL(temp_table.run_id,$run_id) AS run_id, temp_table.Test_Plan, temp_table.Environment, IFNULL(count(temp_table.Status),0) as Failed, IFNULL(temp_table.bug_id,\"none\") AS bugs 
-from ($sql_temp) as temp_table RIGHT JOIN $test_case_run_status ON temp_table.Status=$test_case_run_status.case_run_status_id WHERE $test_case_run_status.case_run_status_id=3 GROUP BY temp_table.run_id";
+$sql = new TR_SQL;
+                $sql->setConnector($this->getConnector());
+                $sql->setFrom("test_plans");
+                $sql->addField("test_case_runs", "run_id", "run_id", "IFNULL($1,$run_id)");
+                $sql->addField("test_plans", "name", "Test_Plan");
+                $sql->addField("test_environments", "name", "Environment");
+                $sql->addField("test_case_runs", "case_id", "status", "IFNULL(COUNT(DISTINCT $1),0)");
+                $sql->addField("test_case_bugs", "bug_id", "bugs", "IFNULL(GROUP_CONCAT(DISTINCT $1),\"none\")");
+                $sql->addJoin("Inner", "=", "test_runs", "plan_id", "test_plans", "plan_id");
+                $sql->addJoin("Inner", "=", "test_environments", "environment_id", "test_runs", "environment_id");
+                $sql->addJoin("Inner", "=", "test_case_runs", "run_id", "test_runs", "run_id");
+                $sql->addJoin("Left", "=", "test_case_bugs", "case_run_id", "test_case_runs", "case_run_id");
+                $sql->addJoin("Inner", "=", "test_case_run_status", "case_run_status_id", "test_case_runs", "case_run_status_id");
+                $sql->addWhere("test_case_runs", "run_id", "=", $run_id);
+                $sql->addWhere("test_case_runs", "iscurrent", "=", "1", "AND");
+                $sql->addWhere("test_case_run_status", "case_run_status_id", "=", "6", "AND");
+$sqlBLOCKED ="select * from (".$sql->toSQL().") as temp_table GROUP BY temp_table.run_id";
 
-$sqlBLOCKED = "select IFNULL(temp_table.run_id,$run_id) AS run_id, temp_table.Test_Plan, temp_table.Environment, IFNULL(count(temp_table.Status),0) as Blocked, IFNULL(temp_table.bug_id,\"none\") AS bugs
-from ($sql_temp) as temp_table RIGHT JOIN $test_case_run_status ON temp_table.Status=$test_case_run_status.case_run_status_id WHERE $test_case_run_status.case_run_status_id=6 GROUP BY temp_table.run_id";
-
+#EDITED: The below section also treats a "NULL" Test Plan and Environment scenario. This was present in a previous implementation of this report but now it always returns the correct test plan and environment names.
 	if ($run_counter == 0) {
 		$result = "SELECT IFNULL(table1.Test_Plan,IFNULL(table2.Test_Plan,IFNULL(table3.Test_Plan,\"NOT READY: $run_id\"))) AS \"Test Plan\", 
 		IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY: $run_id\"))) AS \"Environment\",
-		 FORMAT((table1.passed*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Passed, table1.bugs as \"Other issues\", 
-		 FORMAT((table2.Failed*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Failed, table2.bugs as \"Failing bugs\", 
-		 FORMAT((table3.Blocked*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Blocked, table3.bugs as \"Blocking bugs\" 
+		 IFNULL(FORMAT((table1.status*100)/(table1.status+table2.status+table3.status),1),0) AS Passed, table1.bugs as \"Other issues\", 
+		 IFNULL(FORMAT((table2.status*100)/(table1.status+table2.status+table3.status),1),0) AS Failed, table2.bugs as \"Failing bugs\", 
+		 IFNULL(FORMAT((table3.status*100)/(table1.status+table2.status+table3.status),1),0) AS Blocked, table3.bugs as \"Blocking bugs\" 
 		FROM ($sqlPASSED) AS table1 INNER JOIN ($sqlFAILED) as table2 ON table1.run_id=table2.run_id INNER JOIN ($sqlBLOCKED) as table3 ON table1.run_id=table3.run_id";
 		$run_counter++;
 	}
 	else {
 		$result .= " UNION ALL SELECT IFNULL(table1.Test_Plan,IFNULL(table2.Test_Plan,IFNULL(table3.Test_Plan,\"NOT READY: $run_id\"))) AS \"Test Plan\",
-		IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY: $run_id\"))) AS \"Environment\",
-		 FORMAT((table1.passed*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Passed, table1.bugs as \"Other issues\",
-		 FORMAT((table2.Failed*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Failed, table2.bugs as \"Failing bugs\",
-		 FORMAT((table3.Blocked*100)/(table1.Passed+table2.Failed+table3.Blocked),1) AS Blocked, table3.bugs as \"Blocking bugs\"
-		FROM ($sqlPASSED) AS table1 INNER JOIN ($sqlFAILED) as table2 ON table1.run_id=table2.run_id INNER JOIN ($sqlBLOCKED) as table3 ON table1.run_id=table3.run_id";
+                IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY: $run_id\"))) AS \"Environment\",
+                 IFNULL(FORMAT((table1.status*100)/(table1.status+table2.status+table3.status),1),0) AS Passed, table1.bugs as \"Other issues\",
+                 IFNULL(FORMAT((table2.status*100)/(table1.status+table2.status+table3.status),1),0) AS Failed, table2.bugs as \"Failing bugs\",
+                 IFNULL(FORMAT((table3.status*100)/(table1.status+table2.status+table3.status),1),0) AS Blocked, table3.bugs as \"Blocking bugs\"
+                FROM ($sqlPASSED) AS table1 INNER JOIN ($sqlFAILED) as table2 ON table1.run_id=table2.run_id INNER JOIN ($sqlBLOCKED) as table3 ON table1.run_id=table3.run_id";
 
 }
 }
