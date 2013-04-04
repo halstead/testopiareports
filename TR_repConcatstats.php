@@ -172,7 +172,7 @@ $sqlBLOCKED ="select * from (".$sql->toSQL().") as temp_table GROUP BY temp_tabl
 						if ($value > "90.0") {
                                                 $class = "testopia_TestCase"."PASSED";
                                                 $output = "<td class=\"".$class."\">".$value."%</td>";
-                                                } elseif ($value > "20.0") {
+                                                } elseif ($value > "40.0") {
 						$class = "testopia_TestCase"."PAUSED";
 						$output = "<td class=\"".$class."\">".$value."%</td>";
 						} else {

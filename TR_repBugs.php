@@ -140,10 +140,13 @@ return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, tab
 				case "Age (days)":
 						if ($value < "-700000") {
 							$output = "<td align=\"center\">error</td>";
-						} elseif ($value < "0") {
+						} elseif ($value < "1") {
 							$output ="<td align=\"center\"><FONT COLOR=\"#FF4000\">NEW</FONT></td>";
+						} elseif ($value < "8") {
+							$output = "<td align=\"center\">".$value."<FONT COLOR=\"#236EDE\"> (Recent)</FONT></td>";
+#							$output .="<td align=\"center\"><FONT COLOR=\"#236EDE\"> (Recent)</FONT></td>";
 						} else {
-							$output = "<td align=\"center\">".$value."</td>";
+						$output = "<td align=\"center\">".$value."</FONT></td>";
 						}
 						break;
 				case "Description":
