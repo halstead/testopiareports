@@ -63,14 +63,15 @@ $run_counter = 0;
 foreach ($run_ids as $run_id) {
 		if ($run_counter == 0) {
 			$sql->addWhere("test_case_runs", "run_id", "=", $run_id);
+			$sql->addWhere("test_case_runs", "iscurrent", "=", "1", "AND");#EDITED: added this line to use only current build/environment for ca case run
 			$run_counter ++;
 		}
 		else {
 			$sql->addWhere("test_case_runs", "run_id", "=", $run_id, "OR");
+			$sql->addWhere("test_case_runs", "iscurrent", "=", "1", "AND");#EDITED: added this line to use only current build/environment for ca case run
+
 		}
 }
-
-$sql->addWhere("test_case_runs", "iscurrent", "=", "1", "AND");#EDITED: added this line to use only current build/environment for ca case run
 #		$sql->addGroupSort("Group","test_case_runs", "run_id");
 		$sql->addGroupSort("Group","test_case_run_status", "name");
 #		$sql->addGroupSort("Order","test_case_run_status", "name");
