@@ -124,9 +124,88 @@ abstract class TR_Template {
 	}
 	
 	function getRunID() {
-		return $this->arguments->get(TestopiaParameters::$Param_RunID);
-	}
+		$runid = $this->arguments->get(TestopiaParameters::$Param_RunID);
+		if ($runid != "-1") { return $runid; }
+		else {
+			$products =  explode(", ", $this->getProduct());
+			$products_counter = 0;
+			$testplans =  explode(", ", $this->getTestplan());
+			$testplans_counter = 0;
+			$environments =  explode(", ", $this->getEnvironment());
+			$environments_counter = 0;
+			$builds =  explode(", ", $this->getBuild());
+			$builds_counter = 0;
+			$insummarys =  explode(", ", $this->getInSummary());
+			$insummarys_counter = 0;
+$sql = new TR_SQL;
+$sql->setConnector($this->getConnector());
+$sql->setFrom("test_runs");
+$sql->addField("test_runs", "run_id");
+$sql->addJoin("Inner", "=", "test_plans", "plan_id", "test_runs", "plan_id");
+$sql->addJoin("Inner", "=", "products", "id", "test_plans", "product_id");
+$sql->addJoin("Inner", "=", "test_environments", "environment_id", "test_runs", "environment_id");
+$sql->addJoin("Inner", "=", "test_builds", "build_id", "test_runs", "build_id");
+$where_counter = 0;
+while ($products_counter <= count($products)) {
+if ($where_counter == 0) { $operator = ""; $where_counter ++; } else { $operator = "OR"; }
+$sql->addWhere("products", "name", " LIKE ", "\"%$products[$products_counter]%\"", $operator);
+$sql->addWhere("test_plans", "name", " LIKE ", "\"%$testplans[$testplans_counter]%\"", "AND");
+$sql->addWhere("test_environments", "name", " LIKE ", "\"%$environments[$environments_counter]%\"", "AND");
+$sql->addWhere("test_builds", "name", " LIKE ", "\"%$builds[$build_counter]%\"", "AND");
+$sql->addWhere("test_runs", "summary", " LIKE ", "\"%$insummarys[$insummarys_counter]%\"", "AND");
+$insummarys_counter ++;
+#print count($insummarys);
+#exit;
+    if ($insummarys_counter > (count($insummarys)-1)) { $builds_counter ++; $insummarys_counter = 0; }
+    if ($builds_counter > (count($builds)-1)) { $environments_counter ++; $build_counter = 0; }
+    if ($environments_counter > (count($environments)-1)) { $testplans_counter ++; $environments_counter = 0; }
+    if ($testplans_counter > (count($testplans)-1)) { $products_counter ++; $testplans_counter = 0; }
+}
 
+#foreach ($products as $product) {
+#foreach (array("","OR") as $operator) { 
+#$sql->addWhere("products", "name", " LIKE ", "\"%$product%\"", $operator);
+#foreach ($testplans as $testplan) {
+#foreach (array("AND","OR") as $operator) {
+#$sql->addWhere("test_plans", "name", " LIKE ", "\"%$testplan%\"", $operator);
+#foreach ($environments as $environment) {
+#foreach (array("AND","OR") as $operator) {
+#$sql->addWhere("test_environments", "name", " LIKE ", "\"%$environment%\"", $operator);
+#foreach ($builds as $build) {
+#foreach (array("AND","OR") as $operator) {
+#$sql->addWhere("test_builds", "name", " LIKE ", "\"%$build%\"", $operator);
+#foreach ($insummarys as $insummary) {
+#foreach (array("AND","OR") as $operator) {
+#$sql->addWhere("test_runs", "summary", " LIKE ", "\"%$insummary%\"", $operator);
+#}}}}}}}}}}
+#var_dump($sql->toSQL());
+#exit;
+$results =  $this->getConnector()->execute($sql->toSQL());
+$runid = "";
+while ($result = $this->getConnector()->fetch($results)) {
+$runid .= $result["run_id"].", ";
+}
+if ($runid == NULL) {return "0";}
+else {
+return substr($runid, 0, -2);
+}
+}
+}
+	function getProduct() {
+		return $this->arguments->get(TestopiaParameters::$Param_Product);
+	}
+	function getTestplan() {
+		return $this->arguments->get(TestopiaParameters::$Param_Testplan);
+	}
+	function getEnvironment() {
+		return $this->arguments->get(TestopiaParameters::$Param_Environment);
+	}
+	function getBuild() {
+	return $this->arguments->get(TestopiaParameters::$Param_Build);
+	}
+	function getInSummary() {
+		return $this->arguments->get(TestopiaParameters::$Param_InSummary);
+	}
 	function getPlanID() {
 		return $this->arguments->get(TestopiaParameters::$Param_PlanID);
 	}
@@ -858,7 +937,7 @@ abstract class TR_Template {
 ####################
 #EDITED: This next block gets the test plan name and introduces it in the test run header
 		$run_id = $this->getArgs()->get("run_id");
-if (strpos($run_id, ",") !== false) {
+if ((strpos($run_id, ",") !== false) || ($run_id < 0)) {
 	return $this->getReportName()."<br />";
 }
 else {

@@ -32,6 +32,11 @@ class TestopiaParameters {
 	# default values for general parameters
 	private $defaults=array(
 				"versions"    => "",
+				"product"     => "",
+				"testplan"    => "",
+				"environment" => "",
+				"build"    => "",
+				"insummary"   => "",
 				"zebra"       => "true",
 				"total"       => "true",
 				"sortable"    => "false",
@@ -50,6 +55,11 @@ class TestopiaParameters {
 	# allowed parameters values / types	
 	private $values= array(
 				"versions"		=> array("value" => "alphanumeric"),#EDITED: Added version variable
+				"product"		=> array("value" => "alphanumeric"),
+				"testplan"		=> array("value" => "alphanumeric"),
+				"environment"		=> array("value" => "alphanumeric"),
+				"build"		=> array("value" => "alphanumeric"),
+				"insummary"		=> array("value" => "alphanumeric"),
 				"report_id"		=> array("value" => "alphanumeric"),
 				"run_id"		=> array("value" => "numeric"),
 				"plan_id"		=> array("value" => "numeric"),
@@ -93,13 +103,23 @@ class TestopiaParameters {
 				"title",
 				"reportoptions",
 				"roundperc",
-				"versions"
+				"versions",
+				"product",
+				"testplan",
+				"environment",
+				"insummary",
+				"build"
 			);
 	
 	# Constants for accessing the parameters
 	public static $Param_RunID  = "run_id";
 	public static $Param_PlanID = "plan_id";
 	public static $Param_Versions = "versions";
+	public static $Param_Product = "product";
+	public static $Param_Testplan = "testplan";
+	public static $Param_Environment = "environment";
+	public static $Param_Build = "build";
+	public static $Param_InSummary = "insummary";
 	/**
 	 * 	Constructor
 	 */
