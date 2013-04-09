@@ -123,6 +123,7 @@ abstract class TR_Template {
 		return $this->arguments;
 	}
 	
+#TO-DO: This needs documenting:
 	function getRunID() {
 		$runid = $this->arguments->get(TestopiaParameters::$Param_RunID);
 		if ($runid != "-1") { return $runid; }
@@ -140,6 +141,15 @@ abstract class TR_Template {
 $sql = new TR_SQL;
 $sql->setConnector($this->getConnector());
 $sql->setFrom("test_runs");
+$sql->addField("test_runs", "summary", "max_summary", "MAX($1)");
+$sql->addWhere("test_runs", "summary", " NOT LIKE ", "\"%TEMPLATE%\"");
+$result_ =  $this->getConnector()->execute($sql->toSQL());
+$result = $this->getConnector()->fetch($result_);
+$max_summary = substr($result["max_summary"],0,10);
+
+$sql = new TR_SQL;
+$sql->setConnector($this->getConnector());
+$sql->setFrom("test_runs");
 $sql->addField("test_runs", "run_id");
 $sql->addJoin("Inner", "=", "test_plans", "plan_id", "test_runs", "plan_id");
 $sql->addJoin("Inner", "=", "products", "id", "test_plans", "product_id");
@@ -152,19 +162,23 @@ $sql->addWhere("products", "name", " LIKE ", "\"%$products[$products_counter]%\"
 $sql->addWhere("test_plans", "name", " LIKE ", "\"%$testplans[$testplans_counter]%\"", "AND");
 $sql->addWhere("test_environments", "name", " LIKE ", "\"%$environments[$environments_counter]%\"", "AND");
 $sql->addWhere("test_builds", "name", " LIKE ", "\"%$builds[$builds_counter]%\"", "AND");
+if (strcmp($insummarys[$insummarys_counter],"max") == 0) {
+$sql->addWhere("test_runs", "summary", " LIKE ", "\"%$max_summary%\"", "AND");
+} else {
 $sql->addWhere("test_runs", "summary", " LIKE ", "\"%$insummarys[$insummarys_counter]%\"", "AND");
+}
 $insummarys_counter ++;
     if ($insummarys_counter > (count($insummarys)-1)) { $builds_counter ++; $insummarys_counter = 0; }
     if ($builds_counter > (count($builds)-1)) { $environments_counter ++; $builds_counter = 0; }
     if ($environments_counter > (count($environments)-1)) { $testplans_counter ++; $environments_counter = 0; }
     if ($testplans_counter > (count($testplans)-1)) { $products_counter ++; $testplans_counter = 0; }
 }
-
 $results =  $this->getConnector()->execute($sql->toSQL());
 $runid = "";
 while ($result = $this->getConnector()->fetch($results)) {
 $runid .= $result["run_id"].", ";
 }
+print $runid;
 if ($runid == NULL) {return "0";}
 else {
 return substr($runid, 0, -2);
