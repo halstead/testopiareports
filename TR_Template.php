@@ -142,10 +142,11 @@ $sql = new TR_SQL;
 $sql->setConnector($this->getConnector());
 $sql->setFrom("test_runs");
 $sql->addField("test_runs", "summary", "max_summary", "MAX($1)");
-$sql->addWhere("test_runs", "summary", " NOT LIKE ", "\"%TEMPLATE%\"");
+$sql->addWhere("test_runs", "summary", " REGEXP ", "\"^20[0-9]{2}\"");
+$sql->addWhere("test_runs", "summary", " NOT LIKE ", "\"%TEMPLATE%\"", "AND");
 $result_ =  $this->getConnector()->execute($sql->toSQL());
 $result = $this->getConnector()->fetch($result_);
-$max_summary = substr($result["max_summary"],0,10);
+$max_summary = substr($result["max_summary"],0,9);
 
 $sql = new TR_SQL;
 $sql->setConnector($this->getConnector());
@@ -178,7 +179,6 @@ $runid = "";
 while ($result = $this->getConnector()->fetch($results)) {
 $runid .= $result["run_id"].", ";
 }
-print $runid;
 if ($runid == NULL) {return "0";}
 else {
 return substr($runid, 0, -2);
