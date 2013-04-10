@@ -68,11 +68,10 @@ class TR_repBugs extends TR_Template{
 		$sql->setFrom("bugs");
 		$sql->addField("bugs", "bug_id", "ID");
 		$sql->addField("bugs", "priority", "Priority");
-		$sql->addField("bugs", "bug_severity", "Severity");
 		$sql->addField("bugs", "bug_status", "Status");
 		$sql->addField("bugs", "resolution", "Resolution");
 #		$sql->addField("bugs", "bug_severity", "Severity");
-		$sql->addField("test_case_bugs", "case_id", "Test_Case");
+		$sql->addField("test_runs", "run_id", "Test_Runs", "IFNULL(GROUP_CONCAT(DISTINCT $1),\"none\")");
 		$sql->addField("bugs", "short_desc", "Description");
 		$sql->addField("bugs", "version", "Version");
 		$sql->addField("bugs", "target_milestone", "Target_Milestone");
@@ -115,15 +114,9 @@ foreach ($versions as $version) {
 		$sql->addGroupSort("Group", "bugs", "bug_id");
 $sql_temp = $sql->toSQL();
 
-#var_dump($sql_temp);
-#exit;
-
-#return $sql_temp;
-
-return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, table1.Test_Case as \"Test Case\", table1.Description, table1.Version, table1.Target_Milestone as \"Target Milestone\", 
+return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, table1.Test_Runs as \"Test Runs\", table1.Description, table1.Version, table1.Target_Milestone as \"Target Milestone\", 
 (IFNULL(TO_DAYS(table1.tr_date),0)-TO_DAYS(table1.bug_date)) as \"Age (days)\" from ($sql_temp) as table1";
 
-#return $sql_temp;
 	}
 
 	function renderCell($type, $colNo, $field_name, $value, $lineNo, $line) {
@@ -131,8 +124,19 @@ return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, tab
 		
 		if ($type=="body") {
 			switch ($field_name) {
-				case "Test Case": 
-						$output="<td align=\"center\"><a href=\"".$this->getArgs()->get("bzserver")."/tr_show_case.cgi?case_id=".$value."\">".$value."</a></td>";
+				case "Test Runs": 
+						$output = "<td align=\"center\">";
+						if ($value != "none") {
+                                                foreach (explode(",",$value) as $each_run) {
+                                                $output.="<a href=\"".$this->getArgs()->get("bzserver")."/tr_show_run.cgi?run_id=".$each_run."\">".$each_run."</a> ";
+                                                }
+						} else {
+						$output .= $value;
+						}
+                                                $output.= "</td>";
+                                                break;
+
+						$output="<td align=\"center\"><a href=\"".$this->getArgs()->get("bzserver")."/tr_show_case.cgi?run_id=".$value."\">".$value."</a></td>";
 						break;
 				case "ID"       :
 						$output="<td align=\"center\"><a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$value."\">".$value."</a></td>";
@@ -144,7 +148,6 @@ return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, tab
 							$output ="<td align=\"center\"><FONT COLOR=\"#FF4000\">NEW</FONT></td>";
 						} elseif ($value < "8") {
 							$output = "<td align=\"center\">".$value."<FONT COLOR=\"#236EDE\"> (Recent)</FONT></td>";
-#							$output .="<td align=\"center\"><FONT COLOR=\"#236EDE\"> (Recent)</FONT></td>";
 						} else {
 						$output = "<td align=\"center\">".$value."</FONT></td>";
 						}
