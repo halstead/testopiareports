@@ -45,12 +45,14 @@ class TR_repConcatstats extends TR_Template{
 	function getSQL() {
 $result = "";
 $test_case_run_status = $this->getConnector()->getTable("test_case_run_status");
+$products =  $this->getConnector()->getTable("products");
 $run_ids =  explode(", ", $this->getRunID());
 $run_counter = 0;
 foreach ($run_ids as $run_id) {
 		$sql = new TR_SQL;
 		$sql->setConnector($this->getConnector());
 		$sql->setFrom("test_plans");
+		$sql->addField("test_plans", "product_id");
 		$sql->addField("test_case_runs", "run_id", "run_id", "IFNULL($1,$run_id)");
 		$sql->addField("test_plans", "name", "Test_Plan");
 		$sql->addField("test_environments", "name", "Environment");
@@ -71,6 +73,7 @@ $sqlPASSED = "select * from (".$sql->toSQL().") as temp_table GROUP BY temp_tabl
 $sql = new TR_SQL;
                 $sql->setConnector($this->getConnector());
                 $sql->setFrom("test_plans");
+		$sql->addField("test_plans", "product_id");
                 $sql->addField("test_case_runs", "run_id", "run_id", "IFNULL($1,$run_id)");
                 $sql->addField("test_plans", "name", "Test_Plan");
                 $sql->addField("test_environments", "name", "Environment");
@@ -89,6 +92,7 @@ $sqlFAILED = "select * from (".$sql->toSQL().") as temp_table GROUP BY temp_tabl
 $sql = new TR_SQL;
                 $sql->setConnector($this->getConnector());
                 $sql->setFrom("test_plans");
+		$sql->addField("test_plans", "product_id");
                 $sql->addField("test_case_runs", "run_id", "run_id", "IFNULL($1,$run_id)");
                 $sql->addField("test_plans", "name", "Test_Plan");
                 $sql->addField("test_environments", "name", "Environment");
@@ -106,26 +110,34 @@ $sqlBLOCKED ="select * from (".$sql->toSQL().") as temp_table GROUP BY temp_tabl
 
 #EDITED: The below section also treats a "NULL" Test Plan and Environment scenario. This was present in a previous implementation of this report but now it always returns the correct test plan and environment names.
 	if ($run_counter == 0) {
-		$result = "SELECT IFNULL(table1.Test_Plan,IFNULL(table2.Test_Plan,IFNULL(table3.Test_Plan,\"NOT READY: $run_id\"))) AS \"Test Plan\", 
-		IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY: $run_id\"))) AS \"Environment\",
-		 IFNULL(FORMAT((table1.status*100)/(table1.status+table2.status+table3.status),1),0) AS Passed, table1.bugs as \"Other issues\", 
-		 IFNULL(FORMAT((table2.status*100)/(table1.status+table2.status+table3.status),1),0) AS Failed, table2.bugs as \"Failing bugs\", 
-		 IFNULL(FORMAT((table3.status*100)/(table1.status+table2.status+table3.status),1),0) AS Blocked, table3.bugs as \"Blocking bugs\" 
+		$result = "SELECT IFNULL(table1.product_id,IFNULL(table2.product_id,IFNULL(table3.product_id,\"NOT READY: $run_id\"))) as product_id, 
+		 IFNULL(table1.run_id,IFNULL(table2.run_id,IFNULL(table3.run_id,\"NOT READY: $run_id\"))) as run_id,
+		 IFNULL(table1.Test_Plan,IFNULL(table2.Test_Plan,IFNULL(table3.Test_Plan,\"NOT READY: $run_id\"))) AS \"Test_Plan\", 
+		 IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY: $run_id\"))) AS \"Environment\",
+		 IFNULL(FORMAT((table1.status*100)/(table1.status+table2.status+table3.status),1),0) AS Passed, table1.bugs as \"Other_issues\", 
+		 IFNULL(FORMAT((table2.status*100)/(table1.status+table2.status+table3.status),1),0) AS Failed, table2.bugs as \"Failing_bugs\", 
+		 IFNULL(FORMAT((table3.status*100)/(table1.status+table2.status+table3.status),1),0) AS Blocked, table3.bugs as \"Blocking_bugs\" 
 		FROM ($sqlPASSED) AS table1 INNER JOIN ($sqlFAILED) as table2 ON table1.run_id=table2.run_id INNER JOIN ($sqlBLOCKED) as table3 ON table1.run_id=table3.run_id";
 		$run_counter++;
 	}
 	else {
-		$result .= " UNION ALL SELECT IFNULL(table1.Test_Plan,IFNULL(table2.Test_Plan,IFNULL(table3.Test_Plan,\"NOT READY: $run_id\"))) AS \"Test Plan\",
-                IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY: $run_id\"))) AS \"Environment\",
-                 IFNULL(FORMAT((table1.status*100)/(table1.status+table2.status+table3.status),1),0) AS Passed, table1.bugs as \"Other issues\",
-                 IFNULL(FORMAT((table2.status*100)/(table1.status+table2.status+table3.status),1),0) AS Failed, table2.bugs as \"Failing bugs\",
-                 IFNULL(FORMAT((table3.status*100)/(table1.status+table2.status+table3.status),1),0) AS Blocked, table3.bugs as \"Blocking bugs\"
+		$result .= " UNION ALL SELECT IFNULL(table1.product_id,IFNULL(table2.product_id,IFNULL(table3.product_id,\"NOT READY: $run_id\"))) as product_id,
+		 IFNULL(table1.run_id,IFNULL(table2.run_id,IFNULL(table3.run_id,\"NOT READY: $run_id\"))) as run_id,
+		 IFNULL(table1.Test_Plan,IFNULL(table2.Test_Plan,IFNULL(table3.Test_Plan,\"NOT READY: $run_id\"))) AS \"Test_Plan\",
+                 IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY: $run_id\"))) AS \"Environment\",
+                 IFNULL(ROUND((table1.status*100)/(table1.status+table2.status+table3.status),1),0) AS Passed, table1.bugs as \"Other_issues\",
+                 IFNULL(ROUND((table2.status*100)/(table1.status+table2.status+table3.status),1),0) AS Failed, table2.bugs as \"Failing_bugs\",
+                 IFNULL(ROUND((table3.status*100)/(table1.status+table2.status+table3.status),1),0) AS Blocked, table3.bugs as \"Blocking_bugs\"
                 FROM ($sqlPASSED) AS table1 INNER JOIN ($sqlFAILED) as table2 ON table1.run_id=table2.run_id INNER JOIN ($sqlBLOCKED) as table3 ON table1.run_id=table3.run_id";
 
 }
 }
-
-		return $result;
+		return "SELECT GROUP_CONCAT(temp_table.run_id) as \"Test Run\", temp_table.Test_Plan as \"Test Plan\", temp_table.Environment, 
+			ROUND(AVG(temp_table.Passed),1) as Passed, GROUP_CONCAT(temp_table.Other_issues) as \"Other issues\",
+			ROUND(AVG(temp_table.Failed),1) as Failed, GROUP_CONCAT(temp_table.Failing_bugs) as \"Failing bugs\", 
+			ROUND(AVG(temp_table.Blocked),1) as Blocked, GROUP_CONCAT(temp_table.Blocking_bugs) as \"Blocking bugs\"
+			FROM ($result) as temp_table INNER JOIN $products ON $products.id=temp_table.product_id GROUP BY temp_table.Test_Plan, temp_table.Environment 
+			ORDER BY ($products.classification_id+0) ASC, (temp_table.product_id+0) DESC, temp_table.Environment";
 	}
 
 
@@ -133,39 +145,50 @@ $sqlBLOCKED ="select * from (".$sql->toSQL().") as temp_table GROUP BY temp_tabl
                 $output = "";
                 if ($type=="body") {
                         switch ($field_name) {
-                                case "Other issues":
-                                                $output = "<td>";
+				case "Test Run":
+						$output = "<td align=\"left\">";
 						if ($value != "none") {
-                                                foreach (explode(",",$value) as $each_bug) {
-                                                $output.="<a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$each_bug."\">".$each_bug."</a> ";
+                                                foreach (explode(",",$value) as $each_run) {
+                                                $output.="<a href=\"".$this->getArgs()->get("bzserver")."/tr_show_run.cgi?run_id=".$each_run."\">".$each_run."</a> ";
                                                 }
 						} else {
 						$output .= $value;
 						}
+                                                $output.= "</td>";
+                                                break;
+
+                                case "Other issues":
+                                                $output = "<td>";
+						$here = 0;
+                                                foreach (array_unique(explode(",",$value)) as $each_bug) {
+                                                if ($each_bug != "none"){
+						$output.="<a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$each_bug."\">".$each_bug."</a> ";
+                                                $here = 1;
+						}
+						} if ($here == 0) { $output .= "none"; }
                                                 $output.= "</td>";
                                                 break;
                                 case "Failing bugs":
-                                                $output = "<td>";
-						if ($value != "none") {
-                                                foreach (explode(",",$value) as $each_bug) {
-                                                $output.="<a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$each_bug."\">".$each_bug."</a> ";
-                                                }
-						} else {
-						$output .= $value;
+						$output = "<td>";
+						$here = 0;
+                                                foreach (array_unique(explode(",",$value)) as $each_bug) {
+                                                if ($each_bug != "none"){
+						$output.="<a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$each_bug."\">".$each_bug."</a> ";
+                                                $here = 1;
 						}
+						} if ($here == 0) { $output .= "none"; }
                                                 $output.= "</td>";
                                                 break;
                                 case "Blocking bugs":
-                                                $output = "<td>";
-						if ($value != "none") {
-                                                foreach (explode(",",$value) as $each_bug) {
-                                                $output.="<a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$each_bug."\">".$each_bug."</a> ";
+						$output.= "<td>";
+						$here = 0;
+                                                foreach (array_unique(explode(",",$value)) as $each_bug) {
+                                                if ($each_bug != "none"){
+						$output.="<a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$each_bug."\">".$each_bug."</a> ";
+						$here = 1;
                                                 }
-						} else {
-						$output .= $value;
-						}
+						} if ($here == 0) { $output .= "none"; }
                                                 $output.= "</td>";
-
                                                 break;
 				case "Passed":
                                                 $class = "";

@@ -136,8 +136,10 @@ abstract class TR_Template {
 			$environments_counter = 0;
 			$builds =  explode(", ", $this->getBuild());
 			$builds_counter = 0;
-			$insummarys =  explode(", ", $this->getInSummary());
+			$insummarys_any =  explode(", ", $this->getInSummary_any());
 			$insummarys_counter = 0;
+			$insummarys_all =  explode(", ", $this->getInSummary_all());
+
 $sql = new TR_SQL;
 $sql->setConnector($this->getConnector());
 $sql->setFrom("test_runs");
@@ -146,7 +148,7 @@ $sql->addWhere("test_runs", "summary", " REGEXP ", "\"^20[0-9]{2}\"");
 $sql->addWhere("test_runs", "summary", " NOT LIKE ", "\"%TEMPLATE%\"", "AND");
 $result_ =  $this->getConnector()->execute($sql->toSQL());
 $result = $this->getConnector()->fetch($result_);
-$max_summary = substr($result["max_summary"],0,9);
+$max_summary = substr($result["max_summary"],0,10);
 
 $sql = new TR_SQL;
 $sql->setConnector($this->getConnector());
@@ -163,17 +165,22 @@ $sql->addWhere("products", "name", " LIKE ", "\"%$products[$products_counter]%\"
 $sql->addWhere("test_plans", "name", " LIKE ", "\"%$testplans[$testplans_counter]%\"", "AND");
 $sql->addWhere("test_environments", "name", " LIKE ", "\"%$environments[$environments_counter]%\"", "AND");
 $sql->addWhere("test_builds", "name", " LIKE ", "\"%$builds[$builds_counter]%\"", "AND");
-if (strcmp($insummarys[$insummarys_counter],"max") == 0) {
+foreach ($insummarys_all as $insummary_all) {
+if (strcmp($insummary_all,"max") == 0) {
 $sql->addWhere("test_runs", "summary", " LIKE ", "\"%$max_summary%\"", "AND");
 } else {
-$sql->addWhere("test_runs", "summary", " LIKE ", "\"%$insummarys[$insummarys_counter]%\"", "AND");
+$sql->addWhere("test_runs", "summary", " LIKE ", "\"%$insummary_all%\"", "AND");
 }
+}
+$sql->addWhere("test_runs", "summary", " LIKE ", "\"%$insummarys_any[$insummarys_counter]%\"", "AND");
+
 $insummarys_counter ++;
-    if ($insummarys_counter > (count($insummarys)-1)) { $builds_counter ++; $insummarys_counter = 0; }
+    if ($insummarys_counter > (count($insummarys_any)-1)) { $builds_counter ++; $insummarys_counter = 0; }
     if ($builds_counter > (count($builds)-1)) { $environments_counter ++; $builds_counter = 0; }
     if ($environments_counter > (count($environments)-1)) { $testplans_counter ++; $environments_counter = 0; }
     if ($testplans_counter > (count($testplans)-1)) { $products_counter ++; $testplans_counter = 0; }
 }
+
 $results =  $this->getConnector()->execute($sql->toSQL());
 $runid = "";
 while ($result = $this->getConnector()->fetch($results)) {
@@ -197,8 +204,11 @@ return substr($runid, 0, -2);
 	function getBuild() {
 	return $this->arguments->get(TestopiaParameters::$Param_Build);
 	}
-	function getInSummary() {
-		return $this->arguments->get(TestopiaParameters::$Param_InSummary);
+	function getInSummary_any() {
+		return $this->arguments->get(TestopiaParameters::$Param_InSummary_any);
+	}
+	function getInSummary_all() {
+		return $this->arguments->get(TestopiaParameters::$Param_InSummary_all);
 	}
 	function getPlanID() {
 		return $this->arguments->get(TestopiaParameters::$Param_PlanID);

@@ -125,7 +125,7 @@ return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, tab
 		if ($type=="body") {
 			switch ($field_name) {
 				case "Test Runs": 
-						$output = "<td align=\"center\">";
+						$output = "<td align=\"left\">";
 						if ($value != "none") {
                                                 foreach (explode(",",$value) as $each_run) {
                                                 $output.="<a href=\"".$this->getArgs()->get("bzserver")."/tr_show_run.cgi?run_id=".$each_run."\">".$each_run."</a> ";
@@ -135,9 +135,6 @@ return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, tab
 						}
                                                 $output.= "</td>";
                                                 break;
-
-						$output="<td align=\"center\"><a href=\"".$this->getArgs()->get("bzserver")."/tr_show_case.cgi?run_id=".$value."\">".$value."</a></td>";
-						break;
 				case "ID"       :
 						$output="<td align=\"center\"><a href=\"".$this->getArgs()->get("bzserver")."/show_bug.cgi?id=".$value."\">".$value."</a></td>";
 						break;

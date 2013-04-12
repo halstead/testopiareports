@@ -36,7 +36,8 @@ class TestopiaParameters {
 				"testplan"    => "",
 				"environment" => "",
 				"build"    => "",
-				"insummary"   => "",
+				"insummary_any"   => "",
+				"insummary_all"   => "",
 				"zebra"       => "true",
 				"total"       => "true",
 				"sortable"    => "false",
@@ -58,8 +59,9 @@ class TestopiaParameters {
 				"product"		=> array("value" => "alphanumeric"),
 				"testplan"		=> array("value" => "alphanumeric"),
 				"environment"		=> array("value" => "alphanumeric"),
-				"build"		=> array("value" => "alphanumeric"),
-				"insummary"		=> array("value" => "alphanumeric"),
+				"build"			=> array("value" => "alphanumeric"),
+				"insummary_any"		=> array("value" => "alphanumeric"),
+				"insummary_all"		=> array("value" => "alphanumeric"),
 				"report_id"		=> array("value" => "alphanumeric"),
 				"run_id"		=> array("value" => "numeric"),
 				"plan_id"		=> array("value" => "numeric"),
@@ -107,7 +109,8 @@ class TestopiaParameters {
 				"product",
 				"testplan",
 				"environment",
-				"insummary",
+				"insummary_any",
+				"insummary_all",
 				"build"
 			);
 	
@@ -119,7 +122,8 @@ class TestopiaParameters {
 	public static $Param_Testplan = "testplan";
 	public static $Param_Environment = "environment";
 	public static $Param_Build = "build";
-	public static $Param_InSummary = "insummary";
+	public static $Param_InSummary_any = "insummary_any";
+	public static $Param_InSummary_all = "insummary_all";
 	/**
 	 * 	Constructor
 	 */
