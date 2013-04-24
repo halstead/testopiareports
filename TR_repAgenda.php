@@ -63,19 +63,31 @@ class TR_repAgenda extends TR_Template{
 		
 		$con=$this->getConnector();
 
+$run_ids =  explode(", ", $this->getRunID());
+$run_counter = 0;
+foreach ($run_ids as $run_id) {
+
+
 		$sql = new TR_SQL;
 		$sql->setConnector($this->getConnector());
 		
 		$sql->setFrom("test_case_runs");
+		$sql->addField("test_plans", "name", "Test_Plan");
+                $sql->addField("test_environments", "name", "Environment");
 		$sql->addField("test_case_runs", "case_id", "Test_Case");
 		$sql->addField("test_cases","summary", "Summary");
 		$sql->addField("test_case_categories","name", "Category");
 		$sql->addField("test_case_run_status", "name", "Status");
+		$sql->addJoin("Inner", "=", "test_environments", "environment_id", "test_case_runs", "environment_id");
+		$sql->addJoin("Inner", "=", "test_runs", "run_id", "test_case_runs", "run_id");
+		$sql->addJoin("Inner", "=", "test_plans", "plan_id", "test_runs", "plan_id");
 		$sql->addJoin("Inner", "=", "test_cases", "case_id", "test_case_runs", "case_id");
 		$sql->addJoin("Inner", "=", "test_case_categories", "category_id", "test_cases", "category_id");
 		$sql->addJoin("Inner", "=", "test_case_run_status", "case_run_status_id", "test_case_runs", "case_run_status_id");
-		$sql->addWhere("test_case_runs", "run_id", "=", $this->getRunID(),"");
+		$sql->addWhere("test_case_runs", "run_id", "=", $run_id,"");
 		$sql->addWhere("test_case_runs", "iscurrent", "=", "1", "AND"); # EDITED: added this line to select only current build and environment case runs
+
+
 $sqlStr=$sql->toSQL();
 		$sql = new TR_SQL;
 		$sql->setConnector($this->getConnector()); 
@@ -89,14 +101,10 @@ $sqlStr=$sql->toSQL();
 		$sql->addJoin("Inner", "=", "test_case_bugs", "bug_id", "bugs", "bug_id"); 
 #		$sql->addJoin("Inner", "=", "test_case_runs", "case_id", "test_case_bugs", "case_id"); #EDITED: replace the below line with  this line to get bugs from all environments and builds
 		$sql->addJoin("Inner", "=", "test_case_runs", "case_run_id", "test_case_bugs", "case_run_id");
-#EDITED: The below block adds multiple runs report aggregatin and version filtering
-$run_ids =  explode(", ", $this->getRunID());
-$run_counter = 0;
+$version_counter = 0;
 $versions = explode(", ", $this->getVersions());
-#var_dump($versions);
-foreach ($run_ids as $run_id) {
 foreach ($versions as $version) {
-		if ($run_counter == 0) { # Check if this is the first parsing. If not, add "OR" to the sql sentence
+		if ($version_counter == 0) { # Check if this is the first parsing. If not, add "OR" to the sql sentence
 		$sql->addWhere("test_case_runs", "run_id", "=", $run_id);
 #		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"VERIFIED\"", "AND"); #EDITED: Added this line to rule out verified bugs
 #		$sql->addWhere("bugs", "bug_status", " NOT LIKE ", "\"RESOLVED\"", "AND"); #EDITED: Added this line to rule out resolved bugs
@@ -105,7 +113,7 @@ foreach ($versions as $version) {
 #		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"OBSOLETE\"", "AND");
 		$sql->addWhere("bugs", "resolution", " NOT LIKE ", "\"NOTABUG\"", "AND");
 		$sql->addWhere("bugs", "version", "=", $version, "AND"); #EDITED: Added this line to filter by version if available
-		$run_counter ++;
+		$version_counter ++;
 		}
 		else {
 		$sql->addWhere("test_case_runs", "run_id", "=", $run_id, "OR");
@@ -118,12 +126,26 @@ foreach ($versions as $version) {
 		$sql->addWhere("bugs", "version", "=", $version, "AND");
 		}
 }
-}
+
 		$sql->addGroupSort("Group", "test_case_bugs", "case_id");
+if (strpos($this->getRunID(), ",") !== FALSE) { # Insert a RUN_ID column if multiple test runs are present. This is set so user can identify identical test cases in different test runs.
+		$bonus_sql = "$run_id as \"Test Run\", table1.Test_Plan, table1.Environment, ";
+		}
+		else {
+		$bonus_sql = "";
+		}
 $sqlStr2=$sql->toSQL();
-#var_dump($sqlStr2);
-#exit;
-	return "SELECT table1.Test_Case, table1.Summary, table1.Category, table1.Status, GROUP_CONCAT(table2.ID) \"Bugs\" FROM ($sqlStr) AS table1 LEFT JOIN ($sqlStr2) as table2 ON table2.Test_Case = table1.Test_Case GROUP BY table1.Test_Case";
+if ($run_counter == 0) { #Check if this is the first parsing. If not, use "UNION ALL" to the sql sentence
+	$result .= "SELECT $bonus_sql table1.Test_Case as \"Test Case\", table1.Summary, table1.Category, table1.Status, GROUP_CONCAT(table2.ID) \"Bugs\" FROM ($sqlStr) AS table1 LEFT JOIN ($sqlStr2) as table2 ON table2.Test_Case = table1.Test_Case GROUP BY table1.Test_Case";
+	$run_counter++;
+	}
+else {
+	$result .= " UNION ALL SELECT $bonus_sql table1.Test_Case as \"Test Case\", table1.Summary, table1.Category, table1.Status, GROUP_CONCAT(table2.ID) \"Bugs\" FROM ($sqlStr) AS table1 LEFT JOIN ($sqlStr2) as table2 ON table2.Test_Case = table1.Test_Case GROUP BY table1.Test_Case";
+	}
+}
+return $result;
+
+
 	}
 	
 
@@ -131,7 +153,10 @@ $sqlStr2=$sql->toSQL();
                 $output = "";
                 if ($type=="body") {
                         switch ($field_name) {
-                                case "Test_Case": 
+				case "Test Run":
+				                $output.="<td style=\"text-align:center\"><a href=\"".$this->getArgs()->get("bzserver")."/tr_show_run.cgi?run_id=".$value."\">".$value."</a></td> ";
+                                                break;
+                                case "Test Case": 
                                                 $output="<td style=\"text-align:center\"><a href=\"".$this->getArgs()->get("bzserver")."/tr_show_case.cgi?case_id=".$value."\">".$value."</a></td>";
                                                 break;
                                 case "Status":
