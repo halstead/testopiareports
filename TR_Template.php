@@ -953,7 +953,7 @@ return substr($runid, 0, -2);
 	public function getStandardRunHeader() {
 ####################
 #EDITED: This next block gets the test plan name and introduces it in the test run header
-		$run_id = $this->getArgs()->get("run_id");
+		$run_id = $this->getRunID();
 if ((strpos($run_id, ",") !== false) || ($run_id < 0)) {
 	return $this->getReportName()."<br />";
 }
