@@ -63,7 +63,7 @@ class TestopiaParameters {
 				"insummary_any"		=> array("value" => "alphanumeric"),
 				"insummary_all"		=> array("value" => "alphanumeric"),
 				"report_id"		=> array("value" => "alphanumeric"),
-				"run_id"		=> array("value" => "numeric"),
+				"run_id"		=> array("value" => "string"),
 				"plan_id"		=> array("value" => "numeric"),
 				"zebra"			=> array("value" => "boolean"),
 				"total"			=> array("value" => "boolean"),

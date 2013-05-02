@@ -123,10 +123,23 @@ abstract class TR_Template {
 		return $this->arguments;
 	}
 	
+	function prepareStrings ($string) {
+		if (strlen($string) == 0) { return $string; } # check if string is empty
+		else {
+			$string=str_replace(", ,", ",", $string); # remove empty values due to empty variables
+			if ($string[0] == ",") { $string = substr($string, 1); } #remove commas at the start
+			if ($string[strlen($string)-1] == ",") { $string = substr($string,0,strlen($string)-1); } # remove commas at the end
+			return $string;
+		}
+	}
 #TO-DO: This needs documenting:
 	function getRunID() {
 		$runid = $this->arguments->get(TestopiaParameters::$Param_RunID);
-		if ($runid != "-1") { return $runid; }
+		if ($runid != "-1") {
+#			$runid=str_replace(", ,", ",", $runid); # remove empty values due to empty variables
+#			if ($runid[0] == ",") { $runid = substr($runid, 1); } #remove commas at the start
+#			if ($runid[strlen($runid)-1] == ",") { $runid = substr($runid,0,strlen($runid)-1); } # remove commas at the end
+			return $this->prepareStrings($runid); }
 		else {
 			$products =  explode(", ", $this->getProduct());
 			$products_counter = 0;
@@ -193,25 +206,25 @@ return substr($runid, 0, -2);
 }
 }
 	function getProduct() {
-		return $this->arguments->get(TestopiaParameters::$Param_Product);
+		return $this->prepareStrings($this->arguments->get(TestopiaParameters::$Param_Product));
 	}
 	function getTestplan() {
-		return $this->arguments->get(TestopiaParameters::$Param_Testplan);
+		return $this->prepareStrings($this->arguments->get(TestopiaParameters::$Param_Testplan));
 	}
 	function getEnvironment() {
-		return $this->arguments->get(TestopiaParameters::$Param_Environment);
+		return $this->prepareStrings($this->arguments->get(TestopiaParameters::$Param_Environment));
 	}
 	function getBuild() {
-	return $this->arguments->get(TestopiaParameters::$Param_Build);
+		return $this->prepareStrings($this->arguments->get(TestopiaParameters::$Param_Build));
 	}
 	function getInSummary_any() {
-		return $this->arguments->get(TestopiaParameters::$Param_InSummary_any);
+		return $this->prepareStrings($this->arguments->get(TestopiaParameters::$Param_InSummary_any));
 	}
 	function getInSummary_all() {
-		return $this->arguments->get(TestopiaParameters::$Param_InSummary_all);
+		return $this->prepareStrings($this->arguments->get(TestopiaParameters::$Param_InSummary_all));
 	}
 	function getPlanID() {
-		return $this->arguments->get(TestopiaParameters::$Param_PlanID);
+		return $this->prepareStrings($this->arguments->get(TestopiaParameters::$Param_PlanID));
 	}
 	
 	public function setMsgNoResultsFound( $msg ) {

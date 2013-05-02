@@ -171,11 +171,11 @@ return "SELECT table1.ID, table1.Priority, table1.Status, table1.Resolution, tab
 				$field="Priority";
 				$color="prio";
 				break;
-			case "severity":
-				$field="Severity";
-				$color="auto";
-				$colorrange="red";
-				break;				
+#			case "severity":
+#				$field="Severity";
+#				$color="auto";
+#				$colorrange="red";
+#				break;				
 			default:
 				$field="Priority";
 				$color="prio";	

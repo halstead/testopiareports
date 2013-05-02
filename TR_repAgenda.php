@@ -135,8 +135,8 @@ if (strpos($this->getRunID(), ",") !== FALSE) { # Insert a RUN_ID column if mult
 		$bonus_sql = "";
 		}
 $sqlStr2=$sql->toSQL();
-if ($run_counter == 0) { #Check if this is the first parsing. If not, use "UNION ALL" to the sql sentence
-	$result .= "SELECT $bonus_sql table1.Test_Case as \"Test Case\", table1.Summary, table1.Category, table1.Status, GROUP_CONCAT(table2.ID) \"Bugs\" FROM ($sqlStr) AS table1 LEFT JOIN ($sqlStr2) as table2 ON table2.Test_Case = table1.Test_Case GROUP BY table1.Test_Case";
+if ($run_counter == 0) { #Check if this is the first parsing. If not, add "UNION ALL" to the sql sentence
+	$result = "SELECT $bonus_sql table1.Test_Case as \"Test Case\", table1.Summary, table1.Category, table1.Status, GROUP_CONCAT(table2.ID) \"Bugs\" FROM ($sqlStr) AS table1 LEFT JOIN ($sqlStr2) as table2 ON table2.Test_Case = table1.Test_Case GROUP BY table1.Test_Case";
 	$run_counter++;
 	}
 else {
