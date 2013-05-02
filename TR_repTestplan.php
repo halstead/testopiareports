@@ -150,7 +150,11 @@ foreach ($plan_ids as $plan_id) {
 		}
 }
 		$result=$sql->toSQL();
+if (strpos($this->getPlanID(), ",") !== FALSE) {
 return "select * from (select * from (select * from ($result) as test order by Last_Changed DESC) as test2 group by Test_Case) as test3 order by Product ASC, Test_Case";
+} else {
+return "select * from (select * from (select * from ($result) as test order by Last_Changed DESC) as test2 group by Test_Case) as test3 order by Category DESC, Test_Case";
+}
 	}	
 		
 	function getGoogleChartLink( &$google, $result, $type, $chart ) {
