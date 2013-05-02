@@ -118,9 +118,9 @@ class TR_repTestplan extends TR_Template{
 		$sql = new TR_SQL;
 		$sql->setConnector($this->getConnector());
 		$sql->setFrom("test_plans");
-if (strpos($this->getPlanID(), ",") !== FALSE) {
+	if (strpos($this->getPlanID(), ",") !== FALSE) {
 		$sql->addField("products", "name", "Product");
-}
+	}
 		$sql->addField("test_cases", "case_id", "Test_Case");		
 		$sql->addField("test_cases", "summary", "Test Case Summary");
 		$sql->addField("test_case_categories", "name", "Category");
@@ -134,9 +134,9 @@ if (strpos($this->getPlanID(), ",") !== FALSE) {
 		$sql->addJoin("Left", "=", "test_case_categories", "category_id", "test_cases", "category_id");
 		$sql->addJoin("Inner", "=", "priority", "id", "test_cases", "priority_id"); 
 		$sql->addJoin("Inner", "=", "test_case_status", "case_status_id", "test_cases", "case_status_id");
-if (strpos($this->getPlanID(), ",") !== FALSE) {
+	if (strpos($this->getPlanID(), ",") !== FALSE) {
 		$sql->addJoin("Inner", "=", "products", "id", "test_plans", "product_id");
-}
+	}
 $plan_ids =  explode(", ", $this->getPlanID());
 $plan_counter = 0;
 foreach ($plan_ids as $plan_id) {
@@ -150,7 +150,7 @@ foreach ($plan_ids as $plan_id) {
 		}
 }
 		$result=$sql->toSQL();
-return "select * from (select * from (select * from ($result) as test order by Last_Changed DESC) as test2 group by Test_Case) as test3 order by Category DESC, Test_Case";
+return "select * from (select * from (select * from ($result) as test order by Last_Changed DESC) as test2 group by Test_Case) as test3 order by Product ASC, Test_Case";
 	}	
 		
 	function getGoogleChartLink( &$google, $result, $type, $chart ) {
