@@ -1011,7 +1011,7 @@ else {
 			$line = "";
 		}
 		
-#		return $this->getReportName()."<br />"."<a href=\"".$this->getArgs()->get("bzserver")."/tr_show_plan.cgi?plan_id=".$plan_id."\">Test Plan ".$plan_id." - ".$title."</a>";
+if (strpos($this->getPlanID(), ",") !== FALSE) { return $this->getReportName()."</a>"; }
 		return $this->getReportName()."<br />"."<a href=\"".$this->getArgs()->get("bzserver")."/tr_show_plan.cgi?plan_id=".$plan_id."\">Test Plan  - ".$title."</a>";
 
 	}	
