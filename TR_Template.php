@@ -157,8 +157,15 @@ $sql = new TR_SQL;
 $sql->setConnector($this->getConnector());
 $sql->setFrom("test_runs");
 $sql->addField("test_runs", "summary", "max_summary", "MAX($1)");
-$sql->addWhere("test_runs", "summary", " REGEXP ", "\"^20[0-9]{2}\"");
+$sql->addJoin("Inner", "=", "test_plans", "plan_id", "test_runs", "plan_id");
+$where_counter = 0;
+$operator = "";
+foreach( $testplans as $testplan) {
+if ($where_counter == 0) { $operator = ""; $where_counter ++; } else { $operator = "OR"; }
+$sql->addWhere("test_runs", "summary", " REGEXP ", "\"^20[0-9]{2}\"", $operator);
 $sql->addWhere("test_runs", "summary", " NOT LIKE ", "\"%TEMPLATE%\"", "AND");
+$sql->addWhere("test_plans", "name", " LIKE ", "\"%$testplan%\"", "AND");
+}
 $result_ =  $this->getConnector()->execute($sql->toSQL());
 $result = $this->getConnector()->fetch($result_);
 $max_summary = substr($result["max_summary"],0,10);
@@ -172,6 +179,7 @@ $sql->addJoin("Inner", "=", "products", "id", "test_plans", "product_id");
 $sql->addJoin("Inner", "=", "test_environments", "environment_id", "test_runs", "environment_id");
 $sql->addJoin("Inner", "=", "test_builds", "build_id", "test_runs", "build_id");
 $where_counter = 0;
+$operator = "";
 while ($products_counter < count($products)) {
 if ($where_counter == 0) { $operator = ""; $where_counter ++; } else { $operator = "OR"; }
 $sql->addWhere("products", "name", " LIKE ", "\"%$products[$products_counter]%\"", $operator);
@@ -185,7 +193,11 @@ $sql->addWhere("test_runs", "summary", " LIKE ", "\"%$max_summary%\"", "AND");
 $sql->addWhere("test_runs", "summary", " LIKE ", "\"%$insummary_all%\"", "AND");
 }
 }
+if (strcmp($insummarys_any[$insummarys_counter],"max") == 0) {
+$sql->addWhere("test_runs", "summary", " LIKE ", "\"%$max_summary%\"", "AND");
+} else {
 $sql->addWhere("test_runs", "summary", " LIKE ", "\"%$insummarys_any[$insummarys_counter]%\"", "AND");
+}
 
 $insummarys_counter ++;
     if ($insummarys_counter > (count($insummarys_any)-1)) { $builds_counter ++; $insummarys_counter = 0; }
@@ -193,7 +205,6 @@ $insummarys_counter ++;
     if ($environments_counter > (count($environments)-1)) { $testplans_counter ++; $environments_counter = 0; }
     if ($testplans_counter > (count($testplans)-1)) { $products_counter ++; $testplans_counter = 0; }
 }
-
 $results =  $this->getConnector()->execute($sql->toSQL());
 $runid = "";
 while ($result = $this->getConnector()->fetch($results)) {
