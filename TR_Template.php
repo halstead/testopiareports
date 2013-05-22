@@ -136,9 +136,9 @@ abstract class TR_Template {
 	function getRunID() {
 		$runid = $this->arguments->get(TestopiaParameters::$Param_RunID);
 		if ($runid != "-1") {
-#			$runid=str_replace(", ,", ",", $runid); # remove empty values due to empty variables
-#			if ($runid[0] == ",") { $runid = substr($runid, 1); } #remove commas at the start
-#			if ($runid[strlen($runid)-1] == ",") { $runid = substr($runid,0,strlen($runid)-1); } # remove commas at the end
+			$runid=str_replace(", ,", ",", $runid); # remove empty values due to empty variables
+			if ($runid[0] == ",") { $runid = substr($runid, 1); } #remove commas at the start
+			if ($runid[strlen($runid)-1] == ",") { $runid = substr($runid,0,strlen($runid)-1); } # remove commas at the end
 			return $this->prepareStrings($runid); }
 		else {
 			$products =  explode(", ", $this->getProduct());
