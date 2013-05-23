@@ -126,7 +126,9 @@ abstract class TR_Template {
 	function prepareStrings ($string) {
 		if (strlen($string) == 0) { return $string; } # check if string is empty
 		else {
-			$string=str_replace(", ,", ",", $string); # remove empty values due to empty variables
+			while (strpos($string,", ,")) {
+				$string=str_replace(", ,", ",", $string); # remove empty values due to empty variables
+			}
 			if ($string[0] == ",") { $string = substr($string, 1); } #remove commas at the start
 			if ($string[strlen($string)-1] == ",") { $string = substr($string,0,strlen($string)-1); } # remove commas at the end
 			return $string;
@@ -136,9 +138,9 @@ abstract class TR_Template {
 	function getRunID() {
 		$runid = $this->arguments->get(TestopiaParameters::$Param_RunID);
 		if ($runid != "-1") {
-			$runid=str_replace(", ,", ",", $runid); # remove empty values due to empty variables
-			if ($runid[0] == ",") { $runid = substr($runid, 1); } #remove commas at the start
-			if ($runid[strlen($runid)-1] == ",") { $runid = substr($runid,0,strlen($runid)-1); } # remove commas at the end
+#			$runid=str_replace(", ,", ",", $runid); # remove empty values due to empty variables
+#			if ($runid[0] == ",") { $runid = substr($runid, 1); } #remove commas at the start
+#			if ($runid[strlen($runid)-1] == ",") { $runid = substr($runid,0,strlen($runid)-1); } # remove commas at the end
 			return $this->prepareStrings($runid); }
 		else {
 			$products =  explode(", ", $this->getProduct());
