@@ -108,6 +108,25 @@ $sql = new TR_SQL;
                 $sql->addWhere("test_case_run_status", "case_run_status_id", "=", "6", "AND");
 $sqlBLOCKED ="select * from (".$sql->toSQL().") as temp_table GROUP BY temp_table.run_id";
 
+$sql = new TR_SQL;
+                $sql->setConnector($this->getConnector());
+                $sql->setFrom("test_plans");
+                $sql->addField("test_plans", "product_id");
+                $sql->addField("test_case_runs", "run_id", "run_id", "IFNULL($1,$run_id)");
+                $sql->addField("test_plans", "name", "Test_Plan");
+                $sql->addField("test_environments", "name", "Environment");
+                $sql->addField("test_case_runs", "case_id", "status", "IFNULL(COUNT(DISTINCT $1),0)");
+                $sql->addField("test_case_bugs", "bug_id", "bugs", "IFNULL(GROUP_CONCAT(DISTINCT $1),\"none\")");
+                $sql->addJoin("Inner", "=", "test_runs", "plan_id", "test_plans", "plan_id");
+                $sql->addJoin("Inner", "=", "test_environments", "environment_id", "test_runs", "environment_id");
+                $sql->addJoin("Inner", "=", "test_case_runs", "run_id", "test_runs", "run_id");
+                $sql->addJoin("Left", "=", "test_case_bugs", "case_run_id", "test_case_runs", "case_run_id");
+                $sql->addJoin("Inner", "=", "test_case_run_status", "case_run_status_id", "test_case_runs", "case_run_status_id");
+                $sql->addWhere("test_case_runs", "run_id", "=", $run_id);
+                $sql->addWhere("test_case_runs", "iscurrent", "=", "1", "AND");
+                $sql->addWhere("test_case_run_status", "case_run_status_id", "=", "1", "AND");
+$sqlIDLE ="select * from (".$sql->toSQL().") as temp_table GROUP BY temp_table.run_id";
+
 #EDITED: The below section also treats a "NULL" Test Plan and Environment scenario. This was present in a previous implementation of this report but now it always returns the correct test plan and environment names.
 	if ($run_counter == 0) {
 		$result = "SELECT IFNULL(table1.product_id,IFNULL(table2.product_id,IFNULL(table3.product_id,\"NOT READY: $run_id\"))) as product_id, 
@@ -116,8 +135,10 @@ $sqlBLOCKED ="select * from (".$sql->toSQL().") as temp_table GROUP BY temp_tabl
 		 IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY\"))) AS \"Environment\",
 		 table1.status AS Passed, table1.bugs as \"Other_issues\", 
 		 table2.status AS Failed, table2.bugs as \"Failing_bugs\", 
-		 table3.status AS Blocked, table3.bugs as \"Blocking_bugs\" 
-		FROM ($sqlPASSED) AS table1 INNER JOIN ($sqlFAILED) as table2 ON table1.run_id=table2.run_id INNER JOIN ($sqlBLOCKED) as table3 ON table1.run_id=table3.run_id";
+		 table3.status AS Blocked, table3.bugs as \"Blocking_bugs\", 
+		 table4.status AS Idle
+		FROM ($sqlPASSED) AS table1 INNER JOIN ($sqlFAILED) as table2 ON table1.run_id=table2.run_id INNER JOIN ($sqlBLOCKED) as table3 ON table1.run_id=table3.run_id
+		INNER JOIN ($sqlIDLE) as table4 ON table1.run_id=table4.run_id";
 		$run_counter++;
 	}
 	else {
@@ -127,17 +148,20 @@ $sqlBLOCKED ="select * from (".$sql->toSQL().") as temp_table GROUP BY temp_tabl
 		 IFNULL(table1.Environment,IFNULL(table2.Environment,IFNULL(table3.Environment,\"NOT READY\"))) AS \"Environment\",
 		 table1.status AS Passed, table1.bugs as \"Other_issues\", 
 		 table2.status AS Failed, table2.bugs as \"Failing_bugs\", 
-		 table3.status AS Blocked, table3.bugs as \"Blocking_bugs\" 
-		FROM ($sqlPASSED) AS table1 INNER JOIN ($sqlFAILED) as table2 ON table1.run_id=table2.run_id INNER JOIN ($sqlBLOCKED) as table3 ON table1.run_id=table3.run_id";
+		 table3.status AS Blocked, table3.bugs as \"Blocking_bugs\", 
+		 table4.status AS Idle
+		FROM ($sqlPASSED) AS table1 INNER JOIN ($sqlFAILED) as table2 ON table1.run_id=table2.run_id INNER JOIN ($sqlBLOCKED) as table3 ON table1.run_id=table3.run_id
+		INNER JOIN ($sqlIDLE) as table4 ON table1.run_id=table4.run_id";
 
 
 	}
 }
 
 return "SELECT GROUP_CONCAT(temp_table.run_id) as \"Test Run\", temp_table.Test_Plan as \"Test Plan\", temp_table.Environment, 
-        IFNULL(FORMAT(AVG(temp_table.Passed*100)/(AVG(temp_table.Passed)+AVG(temp_table.Failed)+AVG(temp_table.Blocked)),1),0) AS Passed, GROUP_CONCAT(temp_table.Other_issues) as \"Other issues\", 
-        IFNULL(FORMAT(AVG(temp_table.Failed*100)/(AVG(temp_table.Passed)+AVG(temp_table.Failed)+AVG(temp_table.Blocked)),1),0) AS Failed, GROUP_CONCAT(temp_table.Failing_bugs) as \"Failing bugs\", 
-        IFNULL(FORMAT(AVG(temp_table.Blocked*100)/(AVG(temp_table.Passed)+AVG(temp_table.Failed)+AVG(temp_table.Blocked)),1),0) AS Blocked, GROUP_CONCAT(temp_table.Blocking_bugs) as \"Blocking bugs\"
+        IFNULL(FORMAT(AVG(temp_table.Passed*100)/(AVG(temp_table.Passed)+AVG(temp_table.Failed)+AVG(temp_table.Blocked)+AVG(temp_table.Idle)),1),0) AS Passed, GROUP_CONCAT(temp_table.Other_issues) as \"Other issues\", 
+        IFNULL(FORMAT(AVG(temp_table.Failed*100)/(AVG(temp_table.Passed)+AVG(temp_table.Failed)+AVG(temp_table.Blocked)+AVG(temp_table.Idle)),1),0) AS Failed, GROUP_CONCAT(temp_table.Failing_bugs) as \"Failing bugs\", 
+        IFNULL(FORMAT(AVG(temp_table.Blocked*100)/(AVG(temp_table.Passed)+AVG(temp_table.Failed)+AVG(temp_table.Blocked)+AVG(temp_table.Idle)),1),0) AS Blocked, GROUP_CONCAT(temp_table.Blocking_bugs) as \"Blocking bugs\",
+        IFNULL(FORMAT(100-AVG(temp_table.Idle*100)/(AVG(temp_table.Passed)+AVG(temp_table.Failed)+AVG(temp_table.Blocked)+AVG(temp_table.Idle)),1),0) AS Complete
         FROM ($result) as temp_table INNER JOIN $products ON $products.id=temp_table.product_id GROUP BY temp_table.Test_Plan, temp_table.Environment 
         ORDER BY ($products.classification_id+0) ASC, (temp_table.product_id+0) DESC, temp_table.Environment";
 	}
@@ -192,6 +216,15 @@ return "SELECT GROUP_CONCAT(temp_table.run_id) as \"Test Run\", temp_table.Test_
 						} if ($here == 0) { $output .= "none"; }
                                                 $output.= "</td>";
                                                 break;
+				case "Complete":
+                                                $class = "";
+                                                if ($value > "99.9") {
+                                                $class = "testopia_TestCase"."PASSED";
+                                                $output = "<td class=\"".$class."\">".$value."%</td>";
+                                                } else {
+                                                $output = "<td style=\"text-align:center\">".$value."%</td>";
+                                                }
+                                                break;
 				case "Passed":
                                                 $class = "";
 						if ($value > "90.0") {
@@ -214,7 +247,7 @@ return "SELECT GROUP_CONCAT(temp_table.run_id) as \"Test Run\", temp_table.Test_
 						$class = "testopia_TestCase"."PAUSED";
                                                 $output = "<td class=\"".$class."\">".$value."%</td>";
 						} else
-						$output = "<td>".$value."%</td>";
+						$output = "<td style=\"text-align:center\">".$value."%</td>";
 						break;
 				case "Blocked":
                                                 $class = "";
@@ -225,7 +258,7 @@ return "SELECT GROUP_CONCAT(temp_table.run_id) as \"Test Run\", temp_table.Test_
                                                 $class = "testopia_TestCase"."PAUSED";
                                                 $output = "<td class=\"".$class."\">".$value."%</td>";
                                                 } else
-						$output = "<td>".$value."%</td>";
+						$output = "<td style=\"text-align:center\">".$value."%</td>";
 						break;
 			}
                 }
