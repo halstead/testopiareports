@@ -82,10 +82,10 @@ class TR_Colors {
 	# Bug Status (Ploticus)
 	#
 	private $rep_cols_bug_status = array(
-					"NEW"	      => "blue",
+					"NEW"	      => "red",
 					"ACCEPTED"    => "skyblue",
 					"IN PROGRESS DESIGN"    => "orange", 
-					"REOPENED"    => "red",
+					"REOPENED"    => "dark red",
 					"RESOLVED"    => "green",
 					"VERIFIED"    => "yellow",
 					"CLOSED"      => "grey",
@@ -98,10 +98,10 @@ class TR_Colors {
 	# Bug Status (Google Charts)				
 	#
 	private $rep_cols_bug_status_html = array(
-					"NEW"         => "0000FF",
+					"NEW"         => "FF0000",
 					"ACCEPTED"    => "3366FF",
 					"IN PROGRESS DESIGN"    => "FF9933",
-					"REOPENED"    => "FF0000",
+					"REOPENED"    => "800000",
 					"RESOLVED"    => "33FF33",
 					"VERIFIED"    => "00FF00",
 					"CLOSED"      => "#C0C0C0",
