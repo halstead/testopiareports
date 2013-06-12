@@ -50,7 +50,7 @@ class TR_Colors {
 	# Test Case Priorities (Ploticus)
 	#
 	private $rep_cols_prio = array(
-					"P1"          => "red",
+					""          => "red",
 					"P2"          => "orange",
 					"P3"          => "yellow",
 					"P4"          => "skyblue",
@@ -82,25 +82,33 @@ class TR_Colors {
 	# Bug Status (Ploticus)
 	#
 	private $rep_cols_bug_status = array(
-					"NEW"		  => "blue",
-					"UNCONFIRMED" => "skyblue",
-					"ASSIGNED"    => "orange", 
+					"NEW"	      => "blue",
+					"ACCEPTED"    => "skyblue",
+					"IN PROGRESS DESIGN"    => "orange", 
 					"REOPENED"    => "red",
 					"RESOLVED"    => "green",
 					"VERIFIED"    => "yellow",
-					"CLOSED"      => "green",
+					"CLOSED"      => "grey",
+					"IN PROGRESS DESIGN COMPLETE"      => "purple",
+					"IN PROGRESS REVIEW" => "dark green",
+					"NEEDINFO" => "orange",
+					"WaitForUpstream" => "black",
 					"UNDEF"       => "pink");
 	#					
 	# Bug Status (Google Charts)				
 	#
 	private $rep_cols_bug_status_html = array(
-					"NEW"		  => "0000FF",
-					"UNCONFIRMED" => "3366FF",
-					"ASSIGNED"    => "FF9933",
+					"NEW"         => "0000FF",
+					"ACCEPTED"    => "3366FF",
+					"IN PROGRESS DESIGN"    => "FF9933",
 					"REOPENED"    => "FF0000",
 					"RESOLVED"    => "33FF33",
 					"VERIFIED"    => "00FF00",
-					"CLOSED"      => "00FF00",
+					"CLOSED"      => "#C0C0C0",
+                                        "IN PROGRESS DESIGN COMPLETE" => "FF00FF",
+					"IN PROGRESS REVIEW" => "669933",
+					"NEEDINFO" => "FF9933",
+					"WaitForUpstream" => "000000",
 					"UNDEF"       => "FF3399");
 	#
 	# Completition (Ploticus)
